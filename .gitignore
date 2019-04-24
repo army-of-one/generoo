@@ -1,0 +1,8 @@
+build
+dist
+venv
+
+*.iml
+.idea
+
+*.pyc
