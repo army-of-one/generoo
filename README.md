@@ -2,21 +2,49 @@
 
 This project is a generator for APIs.
 
-#### Pyinstaller
+## Usage
 
-Additionally, you can run `pyinstaller`, which will create a distribution for your machine.
+Using generoo is simple. The CLI or python script take 3 positional arguments:
 
-```pyintaller generoo.py```
+`generoo <goal> <project> <name>`
 
-Then, open the (re)generated `generoo.spec` file and replace the `datas` field under `Analysis` with the following: `datas=[('archetypes', 'archetypes/*')]`.
+- goal - what you want generoo to do. Example: `generate`
+- scope - what you want generoo to create. Example: `project`
+- name - what you want to name what generoo is creating. This will be used as the root directory name. Example: `test`
 
-This will copy over the archetypes to the project, so the templates will be accessible from their relative location in the code.
+Positional Arguments (in the order they appear):
 
-Finally, run:
+#### Goal Options
 
-```pyinstaller generoo.spec```
+| Argument | Description | Aliases |
+|---|---|---|
+|`generate` | Fill in templates for an archetype or custom user project.  | `gen`, `g` |
 
-Navigate to the `dist/`
+
+#### Scope Options
+
+| Argument | Description | Aliases |
+|---|---|---|
+|`project` | Generates a new project with the given name.  | `gen`, `g` |
+
+### Run from Sources
+
+Clone the project. Navigate to the directory on your machine.
+
+You can run from the python interpreter by using the following command:
+
+```python generoo.py <goal> <scope> <name>```
+
+### Run binary
+
+Download the binary. Navigate to the download directory on your machine.
+
+Run the binary using the following command:
+
+```generoo <goal> <scope> <name>```
+
+## Development
+
 ### Template Configuration
 
 The template configuration is the most important configuration. It encompasses the following:
@@ -101,7 +129,6 @@ The mappings define:
 The `destination` string can take named variables using the mustache syntax: `{{variable_name}}. The name, in this case,
 can be any of the variable names, prompt names, or transformation names.
 
-
 ### Run Configurations
 
 After the first run of this project, a `.generoo` file will be created in the root directory. This `.generator` file
@@ -117,3 +144,4 @@ If you would like to proceed with the `run-configuration.json` fields without be
 * Support prompt validations.
 * Add template validations
 * Add mapping and prompt sequencing. Example, collect prompts for sequence 1, then map sequence 1 before continuing to 2.
+* Add support for recursive templating (allow templates to be in correct file structure or template dir)
