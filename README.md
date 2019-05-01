@@ -1,10 +1,10 @@
 # Generoo
 
-This project is a generator for APIs.
+Code generation driven by templating and configuration.
 
 ## Usage
 
-Using generoo is simple. The CLI or python script take 3 positional arguments:
+Using generoo is simple. The CLI or python script takes 3 positional arguments:
 
 `generoo <goal> <project> <name>`
 
@@ -43,7 +43,9 @@ Run the binary using the following command:
 
 ```generoo <goal> <scope> <name>```
 
-## Development
+## Configuration
+
+Configurations are the driving force behind Generoo's generation.
 
 ### Template Configuration
 
@@ -94,7 +96,24 @@ Here is an example of a `template-configuration.json` file:
 }
 ```
 
+#### Variables
+
+Variables are values that you would like to change in a single place in the configuration but that don't require user
+input. 
+
 #### Prompts
+
+Prompts will capture information from the user of the tool. 
+
+- `name` - the name of the variable that stores the value.
+
+- `text` - the text the user will see (no need to add `:`, that will be done for you).
+
+- `options` - a list of the accepted options for the prompt
+
+- `default` - a default value to use if the user does not enter a new one.
+
+- `validations` - a list of validations to perform on the user's input before continuing.
 
 The prompts will execute in the order they appear in the list.
 
