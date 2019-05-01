@@ -11,6 +11,7 @@ generate_options = ['generate', 'gen', 'g']
 project_options = ['project', 'proj', 'pro', 'p']
 excluded_archetypal_directories = ['common', '__pycache__']
 archetype_default = 'archetypes'
+template_configuration_filename = 'template-config.json'
 
 
 def create_configuration_directory(args: argparse.Namespace, run_configuration: dict):
@@ -95,7 +96,7 @@ def get_template_configuration_metadata(args: argparse.Namespace) -> (str, str):
         language, framework, version = prompt_for_archetype()
         directory = f'{directory}/{language}/{framework}/{version}/'
         if not config:
-            config = f'{directory}template-config.json'
+            config = f'{directory}{template_configuration_filename}'
     elif directory is None:
         directory = os.path.dirname(config)
     return directory, config
