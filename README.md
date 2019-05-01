@@ -25,7 +25,7 @@ Positional Arguments (in the order they appear):
 
 | Argument | Description | Aliases |
 |---|---|---|
-|`project` | Generates a new project with the given name.  | `gen`, `g` |
+|`project` | Generates a new project with the given name.  | `project`, `proj`, `pro`, `p` |
 
 ### Run from Sources
 
@@ -159,8 +159,6 @@ If you would like to proceed with the `run-configuration.json` fields without be
  the`-c`or `--no-config` flags in the run command: `generoo generate resource --no-config`.
  
 **TODO**: 
-* Add support for field references between prompts.
-* Support prompt validations.
 * Add template validations
 * Add mapping and prompt sequencing. Example, collect prompts for sequence 1, then map sequence 1 before continuing to 2.
 * Add support for recursive templating (allow templates to be in correct file structure or template dir)
