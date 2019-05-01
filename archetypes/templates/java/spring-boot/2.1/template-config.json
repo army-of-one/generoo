@@ -32,6 +32,11 @@
       "reference": "artifact_id",
       "name": "artifact_id_dashes",
       "transformation": "PERIODS"
+    },
+    {
+      "reference": "group_id",
+      "name": "group_id_slashes",
+      "transformation": "SLASHES"
     }
   ],
   "mappings": [
@@ -41,7 +46,11 @@
     },
     {
       "template": "$artifact_id$Controller.java",
-      "destination": "{{artifact_id}}/{{artifact_id}}-api/src/main/java/{{group_id}}/{{artifact_id_slashes}}/api/{{artifact_id_capitalized}}Controller.java"
+      "destination": "{{artifact_id}}/{{artifact_id}}-api/src/main/java/{{group_id_slashes}}/{{artifact_id_slashes}}/api/{{artifact_id_capitalized}}Controller.java"
+    },
+    {
+      "template": "Application.java",
+      "destination": "{{artifact_id}}/{{artifact_id}}-api/src/main/java/{{group_id}}/{{artifact_id_slashes}}/api/{{artifact_id_capitalized}}Application.java"
     }
   ]
 }
