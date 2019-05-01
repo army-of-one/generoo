@@ -1,8 +1,8 @@
-package {{group_id}}.{{period_artifact_id}}.api;
+package {{group_id}}.{{artifact_id_periods}}.api;
 
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class {{capital_case_artifact_id}}Controller {
+public class {{artifact_id_capitals}}Controller {
 
 }
