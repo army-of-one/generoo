@@ -2,6 +2,21 @@
 
 This project is a generator for APIs.
 
+#### Pyinstaller
+
+Additionally, you can run `pyinstaller`, which will create a distribution for your machine.
+
+```pyintaller generoo.py```
+
+Then, open the (re)generated `generoo.spec` file and replace the `datas` field under `Analysis` with the following: `datas=[('archetypes', 'archetypes/*')]`.
+
+This will copy over the archetypes to the project, so the templates will be accessible from their relative location in the code.
+
+Finally, run:
+
+```pyinstaller generoo.spec```
+
+Navigate to the `dist/`
 ### Template Configuration
 
 The template configuration is the most important configuration. It encompasses the following:
