@@ -2,6 +2,21 @@
 
 This project is a generator for APIs.
 
+#### Pyinstaller
+
+Additionally, you can run `pyinstaller`, which will create a distribution for your machine.
+
+```pyintaller generoo.py```
+
+Then, open the (re)generated `generoo.spec` file and replace the `datas` field under `Analysis` with the following: `datas=[('archetypes', 'archetypes/*')]`.
+
+This will copy over the archetypes to the project, so the templates will be accessible from their relative location in the code.
+
+Finally, run:
+
+```pyinstaller generoo.spec```
+
+Navigate to the `dist/`
 ### Template Configuration
 
 The template configuration is the most important configuration. It encompasses the following:
@@ -29,22 +44,23 @@ Here is an example of a `template-configuration.json` file:
       "default": "default",
       "validations": [
         {
-          "evaluation": "EQUALITY",
-          "values": []
+          "evaluation": "REGEX",
+          "value": "/^\S+$/g"
         }
       ]
     }
   ],
+  "transformations": [
+      {
+        "reference": "artifact_id",
+        "name": "artifact_id_capitalized",
+        "transformation": "CAPITALIZED"
+      }
+  ],
   "mappings": [
     {
       "template": "templates/example.txt",
-      "destination": "output/{}-example.txt",
-      "fields": [
-        {
-          "name": "project",
-          "transformation": "dashes"
-        }
-      ]
+      "destination": "output/{{name}}-example.txt"
     }
   ]
 }
@@ -58,7 +74,7 @@ Evaluations will validate user input. Here are some of the types of validations 
 
 | Evaluation Name | Description |
 | --- | --- |
-| EQUALITY | Checks that the inputted value equals any of the validation values. |
+| REGEX | Checks that the inputted value matches the provided Regular Expression. |
 | GREATER_THAN | Checks that the inputted value is greater than provided value.  |
 | LESS_THAN | Checks that the inputted value is less than provided value. |
 

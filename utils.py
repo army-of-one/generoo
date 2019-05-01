@@ -1,4 +1,5 @@
 import os
+import regex
 from pystache import Renderer
 
 # TODO: implement the proper RegEx for the convert methods. Only work from '-' right now
@@ -48,19 +49,74 @@ def overwrite_file(file, content):
     f.close()
 
 
-def prompt_for_input(prompt, default: str = "", options=None):
+def prompt_for_input(prompt: dict):
+    default = prompt.get('default')
+    options = prompt.get('options')
+    text = prompt.get('text')
+    validations = prompt.get('validations')
     if options is None:
         options = []
-    prompt_text = prompt
     if default is not None and not "":
-        prompt_text += f"({default})"
+        text += f"({default})"
     if len(options) > 0:
-        prompt_text += f"[{options}]"
-    prompt_text += ": "
-    input_response = input(prompt_text)
+        text += f"[{options}]"
+    text += ": "
+    input_response = input(text)
     if input_response is "":
         input_response = default
+    valid = is_valid_input(input_response, validations)
+    while not valid:
+        text = f'{text[0:-2]} ({get_validation_strings(validations)}): '
+        input_response = input(text)
+        valid = is_valid_input(input_response, validations)
     return input_response
+
+
+def get_validation_strings(validations: list) -> str:
+    validation_string = "The following validations must be met to continue: "
+    for validation in validations:
+        evaluation = validation['evaluation']
+        value = validation['value']
+        if evaluation:
+            if evaluation == 'REGEX':
+                text = f'Must match regular expression: {value}. '
+            elif evaluation == 'GREATER_THAN':
+                text = f'Must be greater than: {value}. '
+            elif evaluation == 'LESS_THAN':
+                text = f'Must be less than: {value}. '
+            else:
+                raise AttributeError(f'Invalid evaluation type for validations: {evaluation}')
+            validation_string += text
+    return validation_string[:-1]
+
+
+def is_valid_input(input_response: str, validations: list) -> bool:
+    """
+    Will compare for valid input against a user response.
+
+    At the moment, using the greater than or less than comparator is only support for integer types.
+
+    :param input_response:
+    :param validations:
+    :return:
+    """
+    valid = True
+    if validations:
+        for validation in validations:
+            evaluation = validation['evaluation']
+            value = validation['value']
+            if evaluation:
+                if evaluation == 'REGEX':
+                    valid = regex.match(value, input_response)
+                elif evaluation == 'GREATER_THAN':
+                    valid = int(input_response) > value
+                elif evaluation == 'LESS_THAN':
+                    valid = int(input_response) < value
+                else:
+                    raise AttributeError(f'Invalid evaluation type for validations: {evaluation}')
+                if not valid:
+                    return valid
+    return valid
 
 
 renderer = Renderer()

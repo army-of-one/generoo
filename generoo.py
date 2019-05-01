@@ -69,8 +69,8 @@ def get_versions(language: str, framework: str):
 
 
 def get_generoo_config(args: argparse.Namespace) -> dict:
-    configuration = open(f'{args.name}/run-configuration.json')
-    return json.loads(configuration)
+    configuration = open(f'{args.name}/.generoo/run-configuration.json')
+    return json.loads(configuration.read())
 
 
 def get_template_config(args: argparse.Namespace) -> (str, str):
@@ -122,9 +122,7 @@ def resolve_prompts(run_configuration: dict, template_configuration: dict) -> di
     if prompts:
         for prompt in prompts:
             if prompt['name'] and prompt['text']:
-                default = prompt.get('default')
-                options = prompt.get('options')
-                value = prompt_for_input(prompt['text'], default=default, options=options)
+                value = prompt_for_input(prompt)
                 run_configuration[prompt['name']] = value
             else:
                 raise AttributeError
