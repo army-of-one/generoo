@@ -3,10 +3,10 @@
 block_cipher = None
 
 
-a = Analysis(['microservice-generator.py'],
+a = Analysis(['generator.py'],
              pathex=['/development/armyofone/microservice-generator'],
              binaries=[],
-             datas=[('templates/*', 'templates')],
+             datas=[('archetypes', 'archetypes/*')],
              hiddenimports=[],
              hookspath=[],
              runtime_hooks=[],
@@ -21,7 +21,7 @@ exe = EXE(pyz,
           a.scripts,
           [],
           exclude_binaries=True,
-          name='microservice-generator',
+          name='generator',
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,
@@ -33,4 +33,4 @@ coll = COLLECT(exe,
                a.datas,
                strip=False,
                upx=True,
-               name='microservice-generator')
+               name='generator')
