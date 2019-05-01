@@ -2,13 +2,6 @@
 
 This project is a generator for APIs.
 
-There are a number of built-in generators in the 
-
-
-## Creating a Generator
-
-Generators are built on the backbone of configuration files.
-
 ### Template Configuration
 
 The template configuration is the most important configuration. It encompasses the following:
@@ -69,24 +62,9 @@ Evaluations will validate user input. Here are some of the types of validations 
 | GREATER_THAN | Checks that the inputted value is greater than provided value.  |
 | LESS_THAN | Checks that the inputted value is less than provided value. |
 
-**TODO**: 
-* Add support for field references between prompts.
-* Support prompt validations.
-* Add template validations
+#### Transformations
 
-#### Mappings
-
-The mappings define:
-* `template` - a path to a template file.
-* `destination` - a path to an output file.
-* `fields` - the variables that will be replaced in the output destination string.
-
-The `destination` string can be a formatted string. The formatted strings use `{}` when replacing. Provide
-the same number of `{}` in the destination string as you do fields in the list. The fields will be replaced in order
-for the final `destination` string.
-
-Fields have a name, which corresponds to a variable or prompt name, as well as a transformation. Transformations
-will take the value provided in the prompt and perform a transformation on it to a different format. For example:
+Transformations are done after the prompts are entered by the user. 
 
 Using a `"DASHES"` transformation on `tech.armyofone` yields `tech-armyofone`.
 
@@ -96,7 +74,17 @@ Using a `"DASHES"` transformation on `tech.armyofone` yields `tech-armyofone`.
 |SLASHES | army/of/one |
 |PERIODS | army.of.one  |
 |CAPITALIZED | ArmyOfOne |
-|CAPITALIZED_WITH_SPACES | Army Of One|
+|CAPITALIZED_WITH_SPACES | Army Of One |
+
+#### Mappings
+
+The mappings define:
+* `template` - a path to a template file.
+* `destination` - a path to an output file.
+
+The `destination` string can take named variables using the mustache syntax: `{{variable_name}}. The name, in this case,
+can be any of the variable names, prompt names, or transformation names.
+
 
 ### Run Configurations
 
@@ -107,3 +95,9 @@ used to automatically fill out the fields in prompts.
 
 If you would like to proceed with the `run-configuration.json` fields without being prompted again, then you can provide
  the`-c`or `--no-config` flags in the run command: `generoo generate resource --no-config`.
+ 
+**TODO**: 
+* Add support for field references between prompts.
+* Support prompt validations.
+* Add template validations
+* Add mapping and prompt sequencing. Example, collect prompts for sequence 1, then map sequence 1 before continuing to 2.
