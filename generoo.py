@@ -31,21 +31,28 @@ def create_configuration_directory(args: argparse.Namespace, run_configuration: 
     print('Successfully created generoo configuration directory.')
 
 
-def prompt_for_archetype():
+def prompt_for_archetype() -> (str, str, str):
+    """
+    Collects information from the user on the language, framework, and framework version they want to generate sources
+    from.
+
+    :return: language, framework, version entered by the user.
+    """
+
     language, _ = pick(get_languages(), "Please choose a language:")
     framework, _ = pick(get_framework(language), "Please choose a framework:")
     version, _ = pick(get_versions(language, framework), "Please choose a version:")
     return language, framework, version
 
 
-def get_languages():
+def get_languages() -> list:
     """Traverse templates directory to pull out all of the directories that represent languages. Ignore common.py."""
     root = 'archetypes/'
     return [subdirectory for subdirectory in os.listdir(root) if os.path.isdir(os.path.join(root, subdirectory))
             and subdirectory not in excluded_archetypal_directories]
 
 
-def get_framework(language: str):
+def get_framework(language: str) -> list:
     """
     Traverse templates/{language} directory to pull out all of the directories that represent archetypes.
     Ignore common.py.
@@ -55,7 +62,7 @@ def get_framework(language: str):
             and subdirectory not in excluded_archetypal_directories]
 
 
-def get_versions(language: str, framework: str):
+def get_versions(language: str, framework: str) -> list:
     """
     Traverse templates/{language}/{framework} directory to pull out all of the directories that represent versions.
     Ignore common.py.
