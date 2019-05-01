@@ -4,7 +4,7 @@ import json
 from pick import pick
 
 from utils import prompt_for_input, convert_to_hyphen_case, package_to_file, convert_to_period_case, \
-    convert_to_caps_no_spaces, convert_to_caps_with_spaces
+    convert_to_caps_no_spaces, convert_to_caps_with_spaces, render_template_to_directory, render_destination_path
 
 yes_no = ['yes', 'YES', 'Yes', 'y', 'Y', 'N', 'n', 'no', 'No', 'NO']
 generate_options = ['generate', 'gen', 'g']
@@ -73,13 +73,20 @@ def get_generoo_config(args: argparse.Namespace) -> dict:
     return json.loads(configuration)
 
 
-def get_template_config(args: argparse.Namespace) -> str:
+def get_template_config(args: argparse.Namespace) -> (str, str):
+    """
+    TODO: fix determining whether it was a custom template load or not
+    :param args:
+    :return:
+    """
     if args.template_config:
-        path = args.template_config
+        path = os.path.dirname(args.template_config)
+        file = os.path.basename(args.template_config)
     else:
         language, framework, version = prompt_for_archetype()
-        path = f'archetypes/templates/{language}/{framework}/{version}/template-config.json'
-    return path
+        path = f'archetypes/templates/{language}/{framework}/{version}/'
+        file = 'template-config.json'
+    return path, file
 
 
 def resolve_variables(template_configuration: dict) -> dict:
@@ -155,7 +162,18 @@ def resolve_transformations(run_configuration: dict, template_configurations: di
     return run_configuration
 
 
-def resolve_template_configuration(template_configuration: dict) -> dict:
+def fill_in_templates(template_directory: str, template_configurations: dict, run_configurations: dict):
+    mappings = template_configurations['mappings']
+    if mappings:
+        for mapping in mappings:
+            template = mapping['template']
+            destination = mapping['destination']
+            if template and destination:
+                os.makedirs(template_directory, exist_ok=True)
+                render_template_to_directory(render_destination_path(destination, run_configurations), os.path.join(template_directory, template), run_configurations)
+
+
+def extract_run_configuration(template_configuration: dict) -> dict:
     """
     Runs the lifecycle events for loading the template file. Returns a run configuration.
 
@@ -169,16 +187,17 @@ def resolve_template_configuration(template_configuration: dict) -> dict:
 
 
 def generate_project(args: argparse.Namespace):
+    print('No pre-existing generoo run configuration found...')
+    template_directory, template_file = get_template_config(args)
+    raw_configuration = open(os.path.join(template_directory, template_file))
+    template_configuration = json.loads(raw_configuration.read())
+    raw_configuration.close()
     try:
         run_configuration = get_generoo_config(args)
     except IOError:
-        print('No pre-existing generoo run configuration found...')
-        raw_configuration = open(get_template_config(args))
-        configuration = json.loads(raw_configuration.read())
-        raw_configuration.close()
-        run_configuration = resolve_template_configuration(configuration)
+        run_configuration = extract_run_configuration(template_configuration)
         create_configuration_directory(args, run_configuration)
-    print(run_configuration)
+    fill_in_templates(template_directory, template_configuration, run_configuration)
 
 
 def run(args: argparse.Namespace):
