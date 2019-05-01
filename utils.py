@@ -1,3 +1,4 @@
+import os
 from pystache import Renderer
 
 # TODO: implement the proper RegEx for the convert methods. Only work from '-' right now
@@ -32,11 +33,16 @@ def package_to_file(string):
     return str.replace(string, '-', '/')
 
 
-def render_template_to_directory(renderer: Renderer, file: str, template: str, parameters: dict):
-    overwrite_file(file, renderer.render(open(template, 'r').read(), parameters))
+def render_template_to_directory(destination: str, template: str, parameters: dict):
+    overwrite_file(destination, renderer.render(open(template, 'r').read(), parameters))
+
+
+def render_destination_path(destination: str, parameters: dict) -> str:
+    return renderer.render(destination, parameters)
 
 
 def overwrite_file(file, content):
+    os.makedirs(os.path.dirname(file), exist_ok=True)
     f = open(file, 'w')
     f.write(content)
     f.close()
@@ -55,3 +61,6 @@ def prompt_for_input(prompt, default: str = "", options=None):
     if input_response is "":
         input_response = default
     return input_response
+
+
+renderer = Renderer()
