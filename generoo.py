@@ -73,6 +73,12 @@ def get_versions(language: str, framework: str) -> list:
 
 
 def get_generoo_config(args: argparse.Namespace) -> dict:
+    """
+    Attempts to load the run configuration from the .generoo file in the root directory. Throws exception if failed to
+    find file or failed to load.
+    :param args:
+    :return:
+    """
     configuration = open(f'{args.name}/.generoo/run-configuration.json')
     return json.loads(configuration.read())
 
