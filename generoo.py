@@ -10,10 +10,7 @@ yes_no = ['yes', 'YES', 'Yes', 'y', 'Y', 'N', 'n', 'no', 'No', 'NO']
 generate_options = ['generate', 'gen', 'g']
 project_options = ['project', 'proj', 'pro', 'p']
 
-
-database_options = ['none', 'postgres']
-
-excluded_archetypal_directories = ['common']
+excluded_archetypal_directories = ['common', '__pycache__']
 
 
 def create_configuration_directory(args: argparse.Namespace, run_configuration: dict):
@@ -43,7 +40,7 @@ def prompt_for_archetype():
 
 def get_languages():
     """Traverse templates directory to pull out all of the directories that represent languages. Ignore common.py."""
-    root = 'archetypes/templates'
+    root = 'archetypes/'
     return [subdirectory for subdirectory in os.listdir(root) if os.path.isdir(os.path.join(root, subdirectory))
             and subdirectory not in excluded_archetypal_directories]
 
@@ -53,7 +50,7 @@ def get_framework(language: str):
     Traverse templates/{language} directory to pull out all of the directories that represent archetypes.
     Ignore common.py.
     """
-    root = f'archetypes/templates/{language}'
+    root = f'archetypes/{language}'
     return [subdirectory for subdirectory in os.listdir(root) if os.path.isdir(os.path.join(root, subdirectory))
             and subdirectory not in excluded_archetypal_directories]
 
@@ -63,7 +60,7 @@ def get_versions(language: str, framework: str):
     Traverse templates/{language}/{framework} directory to pull out all of the directories that represent versions.
     Ignore common.py.
     """
-    root = f'archetypes/templates/{language}/{framework}'
+    root = f'archetypes/{language}/{framework}'
     return [subdirectory for subdirectory in os.listdir(root) if os.path.isdir(os.path.join(root, subdirectory))
             and subdirectory not in excluded_archetypal_directories]
 
@@ -84,7 +81,7 @@ def get_template_config(args: argparse.Namespace) -> (str, str):
         file = os.path.basename(args.template_config)
     else:
         language, framework, version = prompt_for_archetype()
-        path = f'archetypes/templates/{language}/{framework}/{version}/'
+        path = f'archetypes/{language}/{framework}/{version}/'
         file = 'template-config.json'
     return path, file
 
