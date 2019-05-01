@@ -3,7 +3,7 @@
 block_cipher = None
 
 
-a = Analysis(['generator.py'],
+a = Analysis(['generoo.py'],
              pathex=['/development/armyofone/microservice-generator'],
              binaries=[],
              datas=[('archetypes', 'archetypes/*')],
