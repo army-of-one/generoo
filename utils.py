@@ -1,28 +1,52 @@
+from pystache import Renderer
+
+# TODO: implement the proper RegEx for the convert methods. Only work from '-' right now
+
+
 def convert_to_hyphen_case(string):
     return str.replace(string, '.', '-')
 
 
 def convert_to_caps_with_spaces(string):
-    return str.replace(string, '-', ' ').capitalize()
+    words = string.split('-')
+    capitalized_words = []
+    for word in words:
+        capitalized_words.append(word.capitalize())
+    return str.join(' ', capitalized_words)
 
 
 def convert_to_caps_no_spaces(string):
-    return str.replace(string, '-', ' ').capitalize()
+    words = string.split('-')
+    capitalized_words = []
+    for word in words:
+        capitalized_words.append(word.capitalize())
+    return str.join('', capitalized_words)
 
 
 def convert_to_period_case(string):
     return str.replace(string, '-', '.')
 
 
+# '[-/\\_]\s'
 def package_to_file(string):
-    return str.replace(string, '.', '/')
+    return str.replace(string, '-', '/')
+
+
+def render_template_to_directory(renderer: Renderer, file: str, template: str, parameters: dict):
+    overwrite_file(file, renderer.render(open(template, 'r').read(), parameters))
+
+
+def overwrite_file(file, content):
+    f = open(file, 'w')
+    f.write(content)
+    f.close()
 
 
 def prompt_for_input(prompt, default: str = "", options=None):
     if options is None:
         options = []
     prompt_text = prompt
-    if default is not "":
+    if default is not None and not "":
         prompt_text += f"({default})"
     if len(options) > 0:
         prompt_text += f"[{options}]"
