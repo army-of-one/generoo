@@ -9,8 +9,8 @@ from utils import prompt_for_input, convert_to_hyphen_case, package_to_file, con
 yes_no = ['yes', 'YES', 'Yes', 'y', 'Y', 'N', 'n', 'no', 'No', 'NO']
 generate_options = ['generate', 'gen', 'g']
 project_options = ['project', 'proj', 'pro', 'p']
-
 excluded_archetypal_directories = ['common', '__pycache__']
+archetype_default = 'archetypes'
 
 
 def create_configuration_directory(args: argparse.Namespace, run_configuration: dict):
@@ -83,20 +83,20 @@ def get_generoo_config(args: argparse.Namespace) -> dict:
     return json.loads(configuration.read())
 
 
-def get_template_config(args: argparse.Namespace) -> (str, str):
+def get_template_configuration_metadata(args: argparse.Namespace) -> (str, str):
     """
-    TODO: fix determining whether it was a custom template load or not
     :param args:
     :return:
     """
-    if args.template_config:
-        path = os.path.dirname(args.template_config)
-        file = os.path.basename(args.template_config)
-    else:
+    config = args.template_config
+    directory = args.templates
+
+    if directory == archetype_default:
         language, framework, version = prompt_for_archetype()
-        path = f'archetypes/{language}/{framework}/{version}/'
-        file = 'template-config.json'
-    return path, file
+        directory = f'{directory}/{language}/{framework}/{version}/'
+        if not config:
+            config = f'{directory}template-config.json'
+    return directory, config
 
 
 def resolve_variables(template_configuration: dict) -> dict:
@@ -196,8 +196,8 @@ def extract_run_configuration(template_configuration: dict) -> dict:
 
 def generate_project(args: argparse.Namespace):
     print('No pre-existing generoo run configuration found...')
-    template_directory, template_file = get_template_config(args)
-    raw_configuration = open(os.path.join(template_directory, template_file))
+    template_directory, template_file = get_template_configuration_metadata(args)
+    raw_configuration = open(template_file)
     template_configuration = json.loads(raw_configuration.read())
     raw_configuration.close()
     try:
@@ -229,7 +229,7 @@ parser.add_argument('-a', '--auto-config',
                          'and only prompting for values not present in the configuration.')
 parser.add_argument('-c', '--template-config',
                     help='Points to a location on the system that contains a custom template config.')
-parser.add_argument('-t', '--templates',
+parser.add_argument('-t', '--templates', default=archetype_default,
                     help='Points to a directory on the system that contains templates for a corresponding '
                          'template config')
 
