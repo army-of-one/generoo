@@ -42,11 +42,6 @@ class JavaSpring21Archetype(Archetype):
                                     f'{self.template_path}/$artifact_id$Controller.java', parameters)
         self.write_template_to_directory(f'{source_path}/Application.java', f'{self.template_path}/Application.java', parameters)
 
-    def write_template_to_directory(self, file: str, template: str, parameters: dict):
-        f = open(file, 'w')
-        f.write(self.renderer.render(open(template, 'r').read(), parameters))
-        f.close()
-
     def generate_api_package(self, group_id: str, artifact_id: str):
         module_name = f'{artifact_id}-api'
         source_path, test_source_path, resource_path, test_resource_path = self.generate_maven_package_structure(group_id, module_name)
