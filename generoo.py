@@ -96,6 +96,8 @@ def get_template_configuration_metadata(args: argparse.Namespace) -> (str, str):
         directory = f'{directory}/{language}/{framework}/{version}/'
         if not config:
             config = f'{directory}template-config.json'
+    elif directory is None:
+        directory = os.path.dirname(config)
     return directory, config
 
 
