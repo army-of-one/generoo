@@ -9,8 +9,9 @@ from utils import prompt_for_input, convert_to_hyphen_case, package_to_file, con
 yes_no = ['yes', 'YES', 'Yes', 'y', 'Y', 'N', 'n', 'no', 'No', 'NO']
 generate_options = ['generate', 'gen', 'g']
 project_options = ['project', 'proj', 'pro', 'p']
-
 excluded_archetypal_directories = ['common', '__pycache__']
+archetype_default = 'archetypes'
+template_configuration_filename = 'template-config.json'
 
 
 def create_configuration_directory(args: argparse.Namespace, run_configuration: dict):
@@ -31,21 +32,28 @@ def create_configuration_directory(args: argparse.Namespace, run_configuration: 
     print('Successfully created generoo configuration directory.')
 
 
-def prompt_for_archetype():
+def prompt_for_archetype() -> (str, str, str):
+    """
+    Collects information from the user on the language, framework, and framework version they want to generate sources
+    from.
+
+    :return: language, framework, version entered by the user.
+    """
+
     language, _ = pick(get_languages(), "Please choose a language:")
     framework, _ = pick(get_framework(language), "Please choose a framework:")
     version, _ = pick(get_versions(language, framework), "Please choose a version:")
     return language, framework, version
 
 
-def get_languages():
+def get_languages() -> list:
     """Traverse templates directory to pull out all of the directories that represent languages. Ignore common.py."""
     root = 'archetypes/'
     return [subdirectory for subdirectory in os.listdir(root) if os.path.isdir(os.path.join(root, subdirectory))
             and subdirectory not in excluded_archetypal_directories]
 
 
-def get_framework(language: str):
+def get_framework(language: str) -> list:
     """
     Traverse templates/{language} directory to pull out all of the directories that represent archetypes.
     Ignore common.py.
@@ -55,7 +63,7 @@ def get_framework(language: str):
             and subdirectory not in excluded_archetypal_directories]
 
 
-def get_versions(language: str, framework: str):
+def get_versions(language: str, framework: str) -> list:
     """
     Traverse templates/{language}/{framework} directory to pull out all of the directories that represent versions.
     Ignore common.py.
@@ -66,24 +74,32 @@ def get_versions(language: str, framework: str):
 
 
 def get_generoo_config(args: argparse.Namespace) -> dict:
+    """
+    Attempts to load the run configuration from the .generoo file in the root directory. Throws exception if failed to
+    find file or failed to load.
+    :param args:
+    :return:
+    """
     configuration = open(f'{args.name}/.generoo/run-configuration.json')
     return json.loads(configuration.read())
 
 
-def get_template_config(args: argparse.Namespace) -> (str, str):
+def get_template_configuration_metadata(args: argparse.Namespace) -> (str, str):
     """
-    TODO: fix determining whether it was a custom template load or not
     :param args:
     :return:
     """
-    if args.template_config:
-        path = os.path.dirname(args.template_config)
-        file = os.path.basename(args.template_config)
-    else:
+    config = args.template_config
+    directory = args.templates
+
+    if directory == archetype_default:
         language, framework, version = prompt_for_archetype()
-        path = f'archetypes/{language}/{framework}/{version}/'
-        file = 'template-config.json'
-    return path, file
+        directory = f'{directory}/{language}/{framework}/{version}/'
+        if not config:
+            config = f'{directory}{template_configuration_filename}'
+    elif directory is None:
+        directory = os.path.dirname(config)
+    return directory, config
 
 
 def resolve_variables(template_configuration: dict) -> dict:
@@ -157,15 +173,34 @@ def resolve_transformations(run_configuration: dict, template_configurations: di
     return run_configuration
 
 
-def fill_in_templates(template_directory: str, template_configurations: dict, run_configurations: dict):
-    mappings = template_configurations['mappings']
+def fill_in_templates(args: argparse.Namespace, template_directory: str, template_configurations: dict, run_configurations: dict):
+    mappings = template_configurations.get('mappings')
     if mappings:
         for mapping in mappings:
             template = mapping['template']
             destination = mapping['destination']
             if template and destination:
-                os.makedirs(template_directory, exist_ok=True)
-                render_template_to_directory(render_destination_path(destination, run_configurations), os.path.join(template_directory, template), run_configurations)
+                if os.path.isdir(template):
+                    if os.path.isdir(destination):
+                        recursively_fill_template_in_dir(args, template, destination, run_configurations)
+                    else:
+                        raise AttributeError(f'{template} is a directory. {destination} must be a directory.')
+                else:
+                    os.makedirs(template_directory, exist_ok=True)
+                    render_template_to_directory(render_destination_path(destination, run_configurations), os.path.join(template_directory, template), run_configurations)
+    else:
+        if os.path.isdir(template_directory):
+            recursively_fill_template_in_dir(args, template_directory, os.curdir, run_configurations)
+
+
+def recursively_fill_template_in_dir(args: argparse.Namespace, template_dir: str, destination: str, run_configurations: dict):
+    template_dir_len = len(template_dir)
+    for root, dirs, files in os.walk(template_dir, topdown=False):
+        for name in files:
+            print(root)
+            file_destination = os.path.join(args.name, destination, root[template_dir_len:], name)
+            if len(file_destination) > 0:
+                render_template_to_directory(render_destination_path(file_destination, run_configurations), os.path.join(root, name), run_configurations)
 
 
 def extract_run_configuration(template_configuration: dict) -> dict:
@@ -183,8 +218,8 @@ def extract_run_configuration(template_configuration: dict) -> dict:
 
 def generate_project(args: argparse.Namespace):
     print('No pre-existing generoo run configuration found...')
-    template_directory, template_file = get_template_config(args)
-    raw_configuration = open(os.path.join(template_directory, template_file))
+    template_directory, template_file = get_template_configuration_metadata(args)
+    raw_configuration = open(template_file)
     template_configuration = json.loads(raw_configuration.read())
     raw_configuration.close()
     try:
@@ -192,7 +227,7 @@ def generate_project(args: argparse.Namespace):
     except IOError:
         run_configuration = extract_run_configuration(template_configuration)
         create_configuration_directory(args, run_configuration)
-    fill_in_templates(template_directory, template_configuration, run_configuration)
+    fill_in_templates(args, template_directory, template_configuration, run_configuration)
 
 
 def run(args: argparse.Namespace):
@@ -216,7 +251,7 @@ parser.add_argument('-a', '--auto-config',
                          'and only prompting for values not present in the configuration.')
 parser.add_argument('-c', '--template-config',
                     help='Points to a location on the system that contains a custom template config.')
-parser.add_argument('-t', '--templates',
+parser.add_argument('-t', '--templates', default=archetype_default,
                     help='Points to a directory on the system that contains templates for a corresponding '
                          'template config')
 

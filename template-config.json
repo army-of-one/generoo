@@ -1,0 +1,42 @@
+{
+  "variables": [
+    {
+      "name": "test",
+      "value": "1"
+    }
+  ],
+  "prompts": [
+    {
+      "name": "group_id",
+      "text": "Enter Group ID Name",
+      "default": "tech.armyofone"
+    },
+    {
+      "name": "artifact_id",
+      "text": "Enter Artifact ID Name",
+      "default": "test"
+    }
+  ],
+  "transformations": [
+    {
+      "reference": "artifact_id",
+      "name": "artifact_id_capitalized",
+      "transformation": "CAPITALIZED"
+    },
+    {
+      "reference": "artifact_id",
+      "name": "artifact_id_slashes",
+      "transformation": "SLASHES"
+    },
+    {
+      "reference": "artifact_id",
+      "name": "artifact_id_dashes",
+      "transformation": "PERIODS"
+    },
+    {
+      "reference": "group_id",
+      "name": "group_id_slashes",
+      "transformation": "SLASHES"
+    }
+  ]
+}
