@@ -159,6 +159,9 @@ If you would like to proceed with the `run-configuration.json` fields without be
  the`-c`or `--no-config` flags in the run command: `generoo generate resource --no-config`.
  
 **TODO**: 
+* Nested Prompts with conditions
+* Templated directory structures
+* Conditional directories
 * Add template validations
 * Add mapping and prompt sequencing. Example, collect prompts for sequence 1, then map sequence 1 before continuing to 2.
 * Add support for recursive templating (allow templates to be in correct file structure or template dir)
