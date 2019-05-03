@@ -1,17 +1,20 @@
 import argparse
-import os
 import json
+import os
+
+import re
+
 from pick import pick
 
-from utils import handle_prompt, convert_to_hyphen_case, package_to_file, convert_to_period_case, \
+from utils import handle_prompt, convert_to_dashes, convert_to_slashes, convert_to_periods, \
     convert_to_caps_no_spaces, convert_to_caps_with_spaces, render_template_to_directory, render_destination_path, \
-    is_valid_input, equals_ignore_case
+    is_valid_input, equals_ignore_case, convert_to_snake, convert_to_camel
 
 generate_options = ['generate', 'gen', 'g']
 project_options = ['project', 'proj', 'pro', 'p']
 excluded_archetypal_directories = ['common', '__pycache__']
 archetype_default = 'archetypes'
-template_configuration_filename = 'template-config.json'
+project_template_filename = 'project-template-config.json'
 
 
 def create_configuration_directory(args: argparse.Namespace, run_configuration: dict):
@@ -96,7 +99,7 @@ def get_template_configuration_metadata(args: argparse.Namespace) -> (str, str):
         language, framework, version = prompt_for_archetype()
         directory = f'{directory}/{language}/{framework}/{version}/'
         if not config:
-            config = f'{directory}{template_configuration_filename}'
+            config = f'{directory}{project_template_filename}'
     elif directory is None:
         directory = os.path.dirname(config)
     return directory, config
@@ -173,19 +176,22 @@ def resolve_transformations(reference: str, transformations: dict, run_configura
         for transformation in transformations:
             name = transformation['name']
             transformation_type = transformation['transformation']
-            if name and transformation:
-                if equals_ignore_case(transformation_type, 'DASHES'):
-                    run_configuration[name] = convert_to_hyphen_case(run_configuration[reference])
-                if equals_ignore_case(transformation_type, 'SLASHES'):
-                    run_configuration[name] = package_to_file(run_configuration[reference])
-                if equals_ignore_case(transformation_type, 'PERIODS'):
-                    run_configuration[name] = convert_to_period_case(run_configuration[reference])
-                if equals_ignore_case(transformation_type, 'CAPITALIZED'):
-                    run_configuration[name] = convert_to_caps_no_spaces(run_configuration[reference])
-                if equals_ignore_case(transformation_type, 'CAPITALIZED_WITH_SPACES'):
-                    run_configuration[name] = convert_to_caps_with_spaces(run_configuration[reference])
+            if equals_ignore_case(transformation_type, 'SNAKE'):
+                run_configuration[name] = convert_to_snake(run_configuration[reference])
+            elif equals_ignore_case(transformation_type, 'DASHES'):
+                run_configuration[name] = convert_to_dashes(run_configuration[reference])
+            elif equals_ignore_case(transformation_type, 'SLASHES'):
+                run_configuration[name] = convert_to_slashes(run_configuration[reference])
+            elif equals_ignore_case(transformation_type, 'PERIODS'):
+                run_configuration[name] = convert_to_periods(run_configuration[reference])
+            elif equals_ignore_case(transformation_type, 'CAMEL'):
+                run_configuration[name] = convert_to_camel(run_configuration[reference])
+            elif equals_ignore_case(transformation_type, 'CAPITALIZED'):
+                run_configuration[name] = convert_to_caps_no_spaces(run_configuration[reference])
+            elif equals_ignore_case(transformation_type, 'CAPITALIZED_WITH_SPACES'):
+                run_configuration[name] = convert_to_caps_with_spaces(run_configuration[reference])
             else:
-                raise AttributeError
+                raise AttributeError(f'Did not recognize the transformation type provided: {transformation_type}')
     return run_configuration
 
 
@@ -281,6 +287,7 @@ def run(args: argparse.Namespace):
 
 
 if __name__ == "__main__":
+    # print(re.sub(r'[\.-_/\s]', '-', "test.project now"))
     parser = argparse.ArgumentParser(description='Generate code from templates.')
 
     # Positional Arguments
@@ -302,3 +309,5 @@ if __name__ == "__main__":
 
     arguments = parser.parse_args()
     run(arguments)
+
+
