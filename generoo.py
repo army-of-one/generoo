@@ -3,10 +3,11 @@ import os
 import json
 from pick import pick
 
-from utils import prompt_for_input, convert_to_hyphen_case, package_to_file, convert_to_period_case, \
-    convert_to_caps_no_spaces, convert_to_caps_with_spaces, render_template_to_directory, render_destination_path
+from utils import handle_prompt, convert_to_hyphen_case, package_to_file, convert_to_period_case, \
+    convert_to_caps_no_spaces, convert_to_caps_with_spaces, render_template_to_directory, render_destination_path, \
+    is_valid_input
 
-yes_no = ['yes', 'YES', 'Yes', 'y', 'Y', 'N', 'n', 'no', 'No', 'NO']
+
 generate_options = ['generate', 'gen', 'g']
 project_options = ['project', 'proj', 'pro', 'p']
 excluded_archetypal_directories = ['common', '__pycache__']
@@ -122,6 +123,16 @@ def resolve_variables(template_configuration: dict) -> dict:
     return run_configuration
 
 
+def process_follow_ups(prompt_response: str, prompt: dict, run_configuration: dict):
+    follow_ups = prompt.get('follow_ups')
+    if follow_ups:
+        for follow_up in follow_ups:
+            conditions = follow_up.get('conditions')
+            if conditions:
+                if is_valid_input(prompt_response, conditions):
+                    process_prompt(follow_up, run_configuration)
+
+
 def resolve_prompts(run_configuration: dict, template_configuration: dict) -> dict:
     """
     The second step of the lifecycle is to collect the user inputs via the prompts. The values will also be written to
@@ -135,11 +146,16 @@ def resolve_prompts(run_configuration: dict, template_configuration: dict) -> di
     if prompts:
         for prompt in prompts:
             if prompt['name'] and prompt['text']:
-                value = prompt_for_input(prompt)
-                run_configuration[prompt['name']] = value
+                process_prompt(prompt, run_configuration)
             else:
                 raise AttributeError
     return run_configuration
+
+
+def process_prompt(prompt, run_configuration):
+    value = handle_prompt(prompt)
+    run_configuration[prompt['name']] = value
+    process_follow_ups(value, prompt, run_configuration)
 
 
 def resolve_transformations(run_configuration: dict, template_configurations: dict) -> dict:
@@ -194,6 +210,16 @@ def fill_in_templates(args: argparse.Namespace, template_directory: str, templat
 
 
 def recursively_fill_template_in_dir(args: argparse.Namespace, template_dir: str, destination: str, run_configurations: dict):
+    """
+    Walk the directory structure non-flat template directory and render both the template content as well as the destination
+    path.
+
+    :param args:
+    :param template_dir:
+    :param destination:
+    :param run_configurations:
+    :return:
+    """
     template_dir_len = len(template_dir)
     for root, dirs, files in os.walk(template_dir, topdown=False):
         for name in files:
@@ -236,24 +262,25 @@ def run(args: argparse.Namespace):
             generate_project(args)
 
 
-parser = argparse.ArgumentParser(description='Generate code from templates.')
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser(description='Generate code from templates.')
 
-# Positional Arguments
-parser.add_argument('goal', help='A generator goal. Examples: generate, config')
-parser.add_argument('scope', help='A generator scope. Examples: project, resource')
-parser.add_argument('name', help='The name for the scope. Example: test, pet, inventory')
+    # Positional Arguments
+    parser.add_argument('goal', help='A generator goal. Examples: generate, config')
+    parser.add_argument('scope', help='A generator scope. Examples: project, resource')
+    parser.add_argument('name', help='The name for the scope. Example: test, pet, inventory')
 
-# Keyword Arguments
-parser.add_argument('-n', '--no-config',
-                    help='Will run generoo without a pre-existing configuration.')
-parser.add_argument('-a', '--auto-config',
-                    help='Will run generoo using the pre-existing configuration '
-                         'and only prompting for values not present in the configuration.')
-parser.add_argument('-c', '--template-config',
-                    help='Points to a location on the system that contains a custom template config.')
-parser.add_argument('-t', '--templates', default=archetype_default,
-                    help='Points to a directory on the system that contains templates for a corresponding '
-                         'template config')
+    # Keyword Arguments
+    parser.add_argument('-n', '--no-config',
+                        help='Will run generoo without a pre-existing configuration.')
+    parser.add_argument('-a', '--auto-config',
+                        help='Will run generoo using the pre-existing configuration '
+                             'and only prompting for values not present in the configuration.')
+    parser.add_argument('-c', '--template-config',
+                        help='Points to a location on the system that contains a custom template config.')
+    parser.add_argument('-t', '--templates', default=archetype_default,
+                        help='Points to a directory on the system that contains templates for a corresponding '
+                             'template config')
 
-args = parser.parse_args()
-run(args)
+    arguments = parser.parse_args()
+    run(arguments)

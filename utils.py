@@ -3,6 +3,7 @@ import regex
 from pystache import Renderer
 
 # TODO: implement the proper RegEx for the convert methods. Only work from '-' right now
+yes_no = ['yes', 'YES', 'Yes', 'y', 'Y', 'N', 'n', 'no', 'No', 'NO']
 
 
 def convert_to_hyphen_case(string):
@@ -49,18 +50,21 @@ def overwrite_file(file, content):
     f.close()
 
 
-def prompt_for_input(prompt: dict):
+def handle_prompt(prompt: dict):
+    prompt_type = prompt.get('type')
+    if not prompt_type:
+        prompt_type = 'STRING'
+    if prompt_type == 'BOOL':
+        prompt['options'] = yes_no
+    return prompt_user(prompt)
+
+
+def prompt_user(prompt: dict):
+    text = prompt['text']
     default = prompt.get('default')
     options = prompt.get('options')
-    text = prompt.get('text')
     validations = prompt.get('validations')
-    if options is None:
-        options = []
-    if default is not None and not "":
-        text += f"({default})"
-    if len(options) > 0:
-        text += f"[{options}]"
-    text += ": "
+    text = format_prompt_text(text, default, options)
     input_response = input(text)
     if input_response is "":
         input_response = default
@@ -70,6 +74,15 @@ def prompt_for_input(prompt: dict):
         input_response = input(text)
         valid = is_valid_input(input_response, validations)
     return input_response
+
+
+def format_prompt_text(text, default, options):
+    if default is not None and not "":
+        text += f"({default})"
+    if options is not None and len(options) > 0:
+        text += f"[{options}]"
+    text += ": "
+    return text
 
 
 def get_validation_strings(validations: list) -> str:
@@ -88,6 +101,10 @@ def get_validation_strings(validations: list) -> str:
                 raise AttributeError(f'Invalid evaluation type for validations: {evaluation}')
             validation_string += text
     return validation_string[:-1]
+
+
+def yes_no_to_bool(input: str):
+    return yes_no.index(input) < len(yes_no)/2
 
 
 def is_valid_input(input_response: str, validations: list) -> bool:
@@ -112,6 +129,8 @@ def is_valid_input(input_response: str, validations: list) -> bool:
                     valid = int(input_response) > value
                 elif evaluation == 'LESS_THAN':
                     valid = int(input_response) < value
+                elif evaluation == 'BOOL':
+                    valid = yes_no_to_bool(input_response) == value
                 else:
                     raise AttributeError(f'Invalid evaluation type for validations: {evaluation}')
                 if not valid:
