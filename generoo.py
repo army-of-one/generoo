@@ -135,27 +135,32 @@ def process_follow_ups(prompt_response: str, prompt: dict, run_configuration: di
                     process_prompt(follow_up, run_configuration)
 
 
-def resolve_prompts(run_configuration: dict, template_configuration: dict) -> dict:
+def resolve_prompts(run_configuration: dict, template_configuration: dict, auto_configure: bool) -> dict:
     """
     The second step of the lifecycle is to collect the user inputs via the prompts. The values will also be written to
     the run configuration.
 
     :param run_configuration:
     :param template_configuration:
+    :param auto_configure:
     :return:
     """
     prompts = template_configuration['prompts']
     if prompts:
         for prompt in prompts:
             if prompt['name'] and prompt['text']:
-                process_prompt(prompt, run_configuration)
+                process_prompt(prompt, run_configuration, auto_configure)
             else:
                 raise AttributeError
     return run_configuration
 
 
-def process_prompt(prompt, run_configuration):
-    value = handle_prompt(prompt)
+def process_prompt(prompt, run_configuration, auto_configure):
+    override = prompt.get('override')
+    if auto_configure and override:
+        value = prompt['default']
+    else:
+        value = handle_prompt(prompt)
     name = prompt['name']
     run_configuration[name] = value
     resolve_transformations(name, prompt.get('transformations'), run_configuration)
@@ -254,7 +259,7 @@ def evaluate_filepath_conditions(file_destination: str, run_configurations: dict
     return file_destination, True
 
 
-def extract_run_configuration(template_configuration: dict) -> dict:
+def extract_run_configuration(template_configuration: dict, auto_configure: bool) -> dict:
     """
     Runs the lifecycle events for loading the template file. Returns a run configuration.
 
@@ -262,21 +267,48 @@ def extract_run_configuration(template_configuration: dict) -> dict:
     :return:
     """
     run_configuration = resolve_variables(template_configuration)
-    run_configuration = resolve_prompts(run_configuration, template_configuration)
+    run_configuration = resolve_prompts(run_configuration, template_configuration, auto_configure)
     return run_configuration
+
+
+def override_defaults(template_configuration, run_configuration):
+    prompts = template_configuration['prompts']
+    if prompts:
+        for prompt in prompts:
+            override_default(prompt, run_configuration)
+    return template_configuration
+
+
+def override_default(prompt, run_configuration):
+    if prompt['name'] in run_configuration:
+        prompt['default'] = run_configuration[prompt['name']]
+        prompt['override'] = True
+        follow_ups = prompt.get('follow_ups')
+        if follow_ups:
+            for follow_up in follow_ups:
+                override_default(follow_up, run_configuration)
+
+
+def load_template_configuration(template_file) -> dict:
+    raw_configuration = open(template_file)
+    template_configuration = json.loads(raw_configuration.read())
+    raw_configuration.close()
+    return template_configuration
 
 
 def generate_project(args: argparse.Namespace):
     print('No pre-existing generoo run configuration found...')
     template_directory, template_file = get_template_configuration_metadata(args)
-    raw_configuration = open(template_file)
-    template_configuration = json.loads(raw_configuration.read())
-    raw_configuration.close()
+    template_configuration = load_template_configuration(template_file)
     try:
-        run_configuration = get_generoo_config(args)
+        if not args.no_config:
+            run_configuration = get_generoo_config(args)
+            template_configuration = override_defaults(template_configuration, run_configuration)
+        run_configuration = extract_run_configuration(template_configuration, args.auto_config)
     except IOError:
-        run_configuration = extract_run_configuration(template_configuration)
-        create_configuration_directory(args, run_configuration)
+        print('Failed to find and/or load existing run configuration.')
+        run_configuration = extract_run_configuration(template_configuration, args.auto_config)
+    create_configuration_directory(args, run_configuration)
     fill_in_templates(args, template_directory, template_configuration, run_configuration)
 
 
@@ -295,12 +327,14 @@ if __name__ == "__main__":
     parser.add_argument('scope', help='A generator scope. Examples: project, resource')
     parser.add_argument('name', help='The name for the scope. Example: test, pet, inventory')
 
-    # Keyword Arguments
-    parser.add_argument('-n', '--no-config',
+    # Flag Arguments
+    parser.add_argument('-n', '--no-config', action='store_true',
                         help='Will run generoo without a pre-existing configuration.')
-    parser.add_argument('-a', '--auto-config',
-                        help='Will run generoo using the pre-existing configuration '
-                             'and only prompting for values not present in the configuration.')
+    parser.add_argument('-a', '--auto-config', action='store_true',
+                        help='Will run generoo using the pre-existing configuration'
+                             'and only prompt for values not present in the configuration.')
+
+    # Keyword Arguments
     parser.add_argument('-c', '--template-config',
                         help='Points to a location on the system that contains a custom template config.')
     parser.add_argument('-t', '--templates', default=archetype_default,
