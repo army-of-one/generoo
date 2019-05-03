@@ -8,7 +8,7 @@ from pick import pick
 
 from utils import handle_prompt, convert_to_dashes, convert_to_slashes, convert_to_periods, \
     convert_to_caps_no_spaces, convert_to_caps_with_spaces, render_template_to_directory, render_destination_path, \
-    is_valid_input, equals_ignore_case, convert_to_snake, convert_to_camel
+    is_valid_input, equals_ignore_case, convert_to_snake, convert_to_camel, yes_no_to_bool
 
 generate_options = ['generate', 'gen', 'g']
 project_options = ['project', 'proj', 'pro', 'p']
@@ -232,8 +232,8 @@ def recursively_fill_template_in_dir(args: argparse.Namespace, template_dir: str
             file_destination = os.path.join(args.name, destination, root[template_dir_len:], name)
             if len(file_destination) > 0:
                 file_destination, passes = evaluate_filepath_conditions(file_destination, run_configurations)
-                print(file_destination)
                 if passes:
+                    print(file_destination)
                     render_template_to_directory(render_destination_path(file_destination, run_configurations), os.path.join(root, name), run_configurations)
 
 
@@ -247,7 +247,7 @@ def evaluate_filepath_conditions(file_destination: str, run_configurations: dict
         tag_close_index = file_destination.find(tag_close, conditional_tag_index)
         tag_start_index = conditional_tag_index + conditional_tag_len
         tag_key = file_destination[tag_start_index:tag_close_index]
-        if tag_key not in run_configurations:
+        if tag_key not in run_configurations or not yes_no_to_bool(run_configurations[tag_key]):
             return file_destination, False
         file_destination = file_destination[:conditional_tag_index] + file_destination[tag_close_index+tag_close_len:]
         conditional_tag_index = file_destination.find(conditional_tag, tag_close_index + tag_close_len)
