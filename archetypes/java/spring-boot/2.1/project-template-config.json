@@ -9,48 +9,57 @@
     {
       "name": "group_id",
       "text": "Enter Group ID Name",
-      "default": "tech.armyofone"
+      "default": "tech.armyofone",
+      "transformations": [
+        {
+          "name": "group_id_slashes",
+          "transformation": "SLASHES"
+        }
+      ]
     },
     {
       "name": "artifact_id",
       "text": "Enter Artifact ID Name",
-      "default": "test"
-    }
-  ],
-  "transformations": [
-    {
-      "reference": "artifact_id",
-      "name": "artifact_id_capitalized",
-      "transformation": "CAPITALIZED"
+      "default": "example",
+      "transformations": [
+        {
+          "name": "artifact_id_capitalized",
+          "transformation": "CAPITALIZED"
+        },
+        {
+          "name": "artifact_id_slashes",
+          "transformation": "SLASHES"
+        },
+        {
+          "name": "artifact_id_periods",
+          "transformation": "PERIODS"
+        }
+      ]
     },
     {
-      "reference": "artifact_id",
-      "name": "artifact_id_slashes",
-      "transformation": "SLASHES"
-    },
-    {
-      "reference": "artifact_id",
-      "name": "artifact_id_dashes",
-      "transformation": "PERIODS"
-    },
-    {
-      "reference": "group_id",
-      "name": "group_id_slashes",
-      "transformation": "SLASHES"
-    }
-  ],
-  "mappings": [
-    {
-      "template": "$api$pom.xml",
-      "destination": "{{artifact_id}}/{{artifact_id}}-api/pom.xml"
-    },
-    {
-      "template": "$artifact_id$Controller.java",
-      "destination": "{{artifact_id}}/{{artifact_id}}-api/src/main/java/{{group_id_slashes}}/{{artifact_id_slashes}}/api/{{artifact_id_capitalized}}Controller.java"
-    },
-    {
-      "template": "Application.java",
-      "destination": "{{artifact_id}}/{{artifact_id}}-api/src/main/java/{{group_id}}/{{artifact_id_slashes}}/api/{{artifact_id_capitalized}}Application.java"
+      "name": "database",
+      "text": "Database?",
+      "type": "BOOL",
+      "default": "Yes",
+      "follow_ups": [
+        {
+          "conditions": [
+            {
+              "evaluation": "BOOL",
+              "value": true
+            }
+          ],
+          "name": "database_type",
+          "text": "What type of database would you like?",
+          "options": ["Postgres", "Cassandra"],
+          "transformations": [
+            {
+              "name": "database_type_capitalized",
+              "transformation": "PERIODS"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
