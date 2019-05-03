@@ -6,8 +6,8 @@ Code generation driven by templating and configuration.
 
 Generoo is a tool that can be used to create customizable and reusable templates for generating anything from single
 documents to complex software projects. Generoo leverages [Mustache](https://mustache.github.io/) for its simple and 
-powerful templating syntax. Be sure to check out their [manual](https://mustache.github.io/mustache.5.html) for all of 
-the information on creating templates.
+powerful templating syntax. Be sure to check out their [manual](https://mustache.github.io/mustache.5.html) for 
+information on creating templates.
 
 Unlike other popular templating frameworks, Generoo requires no additional coding to use.
 
