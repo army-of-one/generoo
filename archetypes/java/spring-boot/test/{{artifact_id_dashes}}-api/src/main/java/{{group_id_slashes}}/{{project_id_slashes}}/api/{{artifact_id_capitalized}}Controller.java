@@ -1,8 +1,8 @@
-package tech.armyofone..api;
+package {{group_id}}.{{artifact_id_periods}}.api;
 
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
-public class Controller {
+public class {{artifact_id_capitalized}}Controller {
 
 }
