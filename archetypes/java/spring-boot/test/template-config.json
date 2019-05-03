@@ -15,6 +15,24 @@
       "name": "artifact_id",
       "text": "Enter Artifact ID Name",
       "default": "test"
+    },
+    {
+      "name": "steak",
+      "text": "Do you like steak?",
+      "type": "BOOL",
+      "default": "Yes",
+      "follow_ups": [
+        {
+          "conditions": [
+            {
+              "evaluation": "BOOL",
+              "value": true
+            }
+          ],
+          "name": "time",
+          "text": "What time do you want to go?"
+        }
+      ]
     }
   ],
   "transformations": [
