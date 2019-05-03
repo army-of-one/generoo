@@ -5,8 +5,7 @@ from pick import pick
 
 from utils import handle_prompt, convert_to_hyphen_case, package_to_file, convert_to_period_case, \
     convert_to_caps_no_spaces, convert_to_caps_with_spaces, render_template_to_directory, render_destination_path, \
-    is_valid_input
-
+    is_valid_input, equals_ignore_case
 
 generate_options = ['generate', 'gen', 'g']
 project_options = ['project', 'proj', 'pro', 'p']
@@ -174,15 +173,15 @@ def resolve_transformations(run_configuration: dict, template_configurations: di
             reference = transformation['reference']
             transformation_type = transformation['transformation']
             if name and reference and transformation:
-                if transformation_type == 'DASHES':
+                if equals_ignore_case(transformation_type, 'DASHES'):
                     run_configuration[name] = convert_to_hyphen_case(run_configuration[reference])
-                if transformation_type == 'SLASHES':
+                if equals_ignore_case(transformation_type, 'SLASHES'):
                     run_configuration[name] = package_to_file(run_configuration[reference])
-                if transformation_type == 'PERIODS':
+                if equals_ignore_case(transformation_type, 'PERIODS'):
                     run_configuration[name] = convert_to_period_case(run_configuration[reference])
-                if transformation_type == 'CAPITALIZED':
+                if equals_ignore_case(transformation_type, 'CAPITALIZED'):
                     run_configuration[name] = convert_to_caps_no_spaces(run_configuration[reference])
-                if transformation_type == 'CAPITALIZED_WITH_SPACES':
+                if equals_ignore_case(transformation_type, 'CAPITALIZED_WITH_SPACES'):
                     run_configuration[name] = convert_to_caps_with_spaces(run_configuration[reference])
             else:
                 raise AttributeError

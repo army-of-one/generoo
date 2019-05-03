@@ -3,7 +3,7 @@ import regex
 from pystache import Renderer
 
 # TODO: implement the proper RegEx for the convert methods. Only work from '-' right now
-yes_no = ['yes', 'YES', 'Yes', 'y', 'Y', 'N', 'n', 'no', 'No', 'NO']
+yes_no = ['y', 'n']
 
 
 def convert_to_hyphen_case(string):
@@ -91,11 +91,11 @@ def get_validation_strings(validations: list) -> str:
         evaluation = validation['evaluation']
         value = validation['value']
         if evaluation:
-            if evaluation == 'REGEX':
+            if equals_ignore_case(evaluation, 'REGEX'):
                 text = f'Must match regular expression: {value}. '
-            elif evaluation == 'GREATER_THAN':
+            elif equals_ignore_case(evaluation, 'GREATER_THAN'):
                 text = f'Must be greater than: {value}. '
-            elif evaluation == 'LESS_THAN':
+            elif equals_ignore_case(evaluation, 'LESS_THAN'):
                 text = f'Must be less than: {value}. '
             else:
                 raise AttributeError(f'Invalid evaluation type for validations: {evaluation}')
@@ -103,8 +103,10 @@ def get_validation_strings(validations: list) -> str:
     return validation_string[:-1]
 
 
-def yes_no_to_bool(input: str):
-    return yes_no.index(input) < len(yes_no)/2
+def yes_no_to_bool(response: str):
+    if len(response) > 0:
+        return equals_ignore_case(response[0], 'y')
+    return False
 
 
 def is_valid_input(input_response: str, validations: list) -> bool:
@@ -123,19 +125,23 @@ def is_valid_input(input_response: str, validations: list) -> bool:
             evaluation = validation['evaluation']
             value = validation['value']
             if evaluation:
-                if evaluation == 'REGEX':
+                if equals_ignore_case(evaluation, 'REGEX'):
                     valid = regex.match(value, input_response)
-                elif evaluation == 'GREATER_THAN':
+                elif equals_ignore_case(evaluation, 'GREATER_THAN'):
                     valid = int(input_response) > value
-                elif evaluation == 'LESS_THAN':
+                elif equals_ignore_case(evaluation, 'LESS_THAN'):
                     valid = int(input_response) < value
-                elif evaluation == 'BOOL':
+                elif equals_ignore_case(evaluation, 'BOOL'):
                     valid = yes_no_to_bool(input_response) == value
                 else:
                     raise AttributeError(f'Invalid evaluation type for validations: {evaluation}')
                 if not valid:
                     return valid
     return valid
+
+
+def equals_ignore_case(candidate: str, target: str):
+    return candidate.lower() == target.lower()
 
 
 renderer = Renderer()
