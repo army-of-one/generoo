@@ -18,7 +18,7 @@ it can all be achieved through a JSON configuration file and a template folder.
 
 Using generoo is simple. The CLI or python script takes 3 positional arguments:
 
-`generoo [options] <goal> <scope> <name>`
+`generoo [options...] <goal> <scope> <name>`
 
 - `goal` - what you want generoo to do. Example: `generate`
 - `scope` - what you want generoo to create. Example: `project`
