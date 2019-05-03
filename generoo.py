@@ -2,8 +2,6 @@ import argparse
 import json
 import os
 
-import re
-
 from pick import pick
 
 from utils import handle_prompt, convert_to_dashes, convert_to_slashes, convert_to_periods, \
