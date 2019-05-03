@@ -20,7 +20,7 @@
     {
       "name": "artifact_id",
       "text": "Enter Artifact ID Name",
-      "default": "test",
+      "default": "example",
       "transformations": [
         {
           "name": "artifact_id_capitalized",
