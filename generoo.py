@@ -6,7 +6,7 @@ from pick import pick
 
 from utils import handle_prompt, convert_to_dashes, convert_to_slashes, convert_to_periods, \
     convert_to_caps_no_spaces, convert_to_caps_with_spaces, render_template_to_directory, render_destination_path, \
-    is_valid_input, equals_ignore_case, convert_to_snake, convert_to_camel, yes_no_to_bool
+    is_valid_input, equals_ignore_case, convert_to_snake, convert_to_camel, yes_no_to_bool, convert_to_lower_with_spaces
 
 generate_options = ['generate', 'gen', 'g']
 project_options = ['project', 'proj', 'pro', 'p']
@@ -187,6 +187,8 @@ def resolve_transformations(reference: str, transformations: dict, run_configura
                 run_configuration[name] = convert_to_slashes(run_configuration[reference])
             elif equals_ignore_case(transformation_type, 'PERIODS'):
                 run_configuration[name] = convert_to_periods(run_configuration[reference])
+            elif equals_ignore_case(transformation_type, 'LOWER'):
+                run_configuration[name] = convert_to_lower_with_spaces(run_configuration[reference])
             elif equals_ignore_case(transformation_type, 'CAMEL'):
                 run_configuration[name] = convert_to_camel(run_configuration[reference])
             elif equals_ignore_case(transformation_type, 'CAPITALIZED'):

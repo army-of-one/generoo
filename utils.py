@@ -23,6 +23,10 @@ def convert_to_slashes(string):
     return re.sub(r'[-_.|\s]', '/', cap_sanitized(string)).lower()
 
 
+def convert_to_lower_with_spaces(string):
+    return convert_to_caps_with_spaces(string).lower()
+
+
 def convert_to_camel(string):
     all_caps = convert_to_caps_no_spaces(string)
     return all_caps[0].lower() + all_caps[1:]

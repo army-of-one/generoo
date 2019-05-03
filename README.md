@@ -212,6 +212,7 @@ Using a `"DASHES"` transformation on `tech.armyofone` yields `tech-armyofone`.
 |DASHES | army-of-one  |
 |SLASHES | army/of/one |
 |PERIODS | army.of.one  |
+|LOWER | army of one  |
 |CAMEL | armyOfOne |
 |CAPITALIZED | ArmyOfOne |
 |CAPITALIZED_WITH_SPACES | Army Of One |
