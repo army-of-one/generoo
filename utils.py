@@ -1,4 +1,5 @@
 import os
+import re
 import regex
 from pystache import Renderer
 
@@ -6,33 +7,54 @@ from pystache import Renderer
 yes_no = ['y', 'n']
 
 
-def convert_to_hyphen_case(string):
-    return str.replace(string, '.', '-')
+def convert_to_snake(string):
+    return re.sub(r'[-./|\s]', '_', cap_sanitized(string)).lower()
+
+
+def convert_to_dashes(string):
+    return re.sub(r'[._/|\s]', '.', cap_sanitized(string)).lower()
+
+
+def convert_to_periods(string):
+    return re.sub(r'[-_/|\s]', '.', cap_sanitized(string)).lower()
+
+
+def convert_to_slashes(string):
+    return re.sub(r'[-_.|\s]', '/', cap_sanitized(string)).lower()
+
+
+def convert_to_camel(string):
+    all_caps = convert_to_caps_no_spaces(string)
+    return all_caps[0].lower() + all_caps[1:]
 
 
 def convert_to_caps_with_spaces(string):
-    words = string.split('-')
-    capitalized_words = []
-    for word in words:
-        capitalized_words.append(word.capitalize())
+    capitalized_words = extract_words(string)
     return str.join(' ', capitalized_words)
 
 
 def convert_to_caps_no_spaces(string):
+    capitalized_words = extract_words(string)
+    return str.join('', capitalized_words)
+
+
+def extract_words(string):
+    string = convert_to_dashes(string)
     words = string.split('-')
     capitalized_words = []
     for word in words:
         capitalized_words.append(word.capitalize())
-    return str.join('', capitalized_words)
+    return capitalized_words
 
 
-def convert_to_period_case(string):
-    return str.replace(string, '-', '.')
-
-
-# '[-/\\_]\s'
-def package_to_file(string):
-    return str.replace(string, '-', '/')
+def cap_sanitized(string: str):
+    index = 0
+    for letter in string:
+        if letter.isupper():
+            if index > 0:
+                string = string[:index] + '|' + letter.lower()
+        index += 1
+    return string
 
 
 def render_template_to_directory(destination: str, template: str, parameters: dict):
@@ -66,7 +88,7 @@ def prompt_user(prompt: dict):
     validations = prompt.get('validations')
     text = format_prompt_text(text, default, options)
     input_response = input(text)
-    if input_response is "":
+    if input_response == "":
         input_response = default
     valid = is_valid_input(input_response, validations)
     while not valid:
