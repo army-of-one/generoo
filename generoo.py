@@ -153,26 +153,27 @@ def resolve_prompts(run_configuration: dict, template_configuration: dict) -> di
 
 def process_prompt(prompt, run_configuration):
     value = handle_prompt(prompt)
-    run_configuration[prompt['name']] = value
+    name = prompt['name']
+    run_configuration[name] = value
+    resolve_transformations(name, prompt.get('transformations'), run_configuration)
     process_follow_ups(value, prompt, run_configuration)
 
 
-def resolve_transformations(run_configuration: dict, template_configurations: dict) -> dict:
+def resolve_transformations(reference: str, transformations: dict, run_configuration: dict) -> dict:
     """
     The third step of the lifecycle is to make the desired transformations. The values will also be written to the run
     configuration.
 
+    :param reference
     :param run_configuration:
-    :param template_configurations:
+    :param transformations:
     :return:
     """
-    transformations = template_configurations['transformations']
     if transformations:
         for transformation in transformations:
             name = transformation['name']
-            reference = transformation['reference']
             transformation_type = transformation['transformation']
-            if name and reference and transformation:
+            if name and transformation:
                 if equals_ignore_case(transformation_type, 'DASHES'):
                     run_configuration[name] = convert_to_hyphen_case(run_configuration[reference])
                 if equals_ignore_case(transformation_type, 'SLASHES'):
@@ -222,10 +223,29 @@ def recursively_fill_template_in_dir(args: argparse.Namespace, template_dir: str
     template_dir_len = len(template_dir)
     for root, dirs, files in os.walk(template_dir, topdown=False):
         for name in files:
-            print(root)
             file_destination = os.path.join(args.name, destination, root[template_dir_len:], name)
             if len(file_destination) > 0:
-                render_template_to_directory(render_destination_path(file_destination, run_configurations), os.path.join(root, name), run_configurations)
+                file_destination, passes = evaluate_filepath_conditions(file_destination, run_configurations)
+                print(file_destination)
+                if passes:
+                    render_template_to_directory(render_destination_path(file_destination, run_configurations), os.path.join(root, name), run_configurations)
+
+
+def evaluate_filepath_conditions(file_destination: str, run_configurations: dict) -> (str, bool):
+    conditional_tag = '{{#'
+    tag_close = '}}'
+    conditional_tag_len = len(conditional_tag)
+    tag_close_len = len(tag_close)
+    conditional_tag_index = file_destination.find(conditional_tag)
+    while conditional_tag_index >= 0:
+        tag_close_index = file_destination.find(tag_close, conditional_tag_index)
+        tag_start_index = conditional_tag_index + conditional_tag_len
+        tag_key = file_destination[tag_start_index:tag_close_index]
+        if tag_key not in run_configurations:
+            return file_destination, False
+        file_destination = file_destination[:conditional_tag_index] + file_destination[tag_close_index+tag_close_len:]
+        conditional_tag_index = file_destination.find(conditional_tag, tag_close_index + tag_close_len)
+    return file_destination, True
 
 
 def extract_run_configuration(template_configuration: dict) -> dict:
@@ -237,7 +257,6 @@ def extract_run_configuration(template_configuration: dict) -> dict:
     """
     run_configuration = resolve_variables(template_configuration)
     run_configuration = resolve_prompts(run_configuration, template_configuration)
-    run_configuration = resolve_transformations(run_configuration, template_configuration)
     return run_configuration
 
 
