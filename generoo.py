@@ -319,7 +319,6 @@ def run(args: argparse.Namespace):
 
 
 if __name__ == "__main__":
-    # print(re.sub(r'[\.-_/\s]', '-', "test.project now"))
     parser = argparse.ArgumentParser(description='Generate code from templates.')
 
     # Positional Arguments
