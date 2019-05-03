@@ -2,15 +2,25 @@
 
 Code generation driven by templating and configuration.
 
+## What does it do?
+
+Generoo is a tool that can be used to create customizable and reusable templates for generating anything from single
+documents to complex software projects.
+
+Unlike other popular templating frameworks, Generoo requires no additional coding to use.
+
+Whether you want to generate a Spring Boot 2.1 API from the built in Generoo archetypes, or you created your own template,
+it can all be achieved through a JSON configuration file and templates.
+
 ## Usage
 
 Using generoo is simple. The CLI or python script takes 3 positional arguments:
 
-`generoo <goal> <project> <name>`
+`generoo <goal> <scope> <name>`
 
-- goal - what you want generoo to do. Example: `generate`
-- scope - what you want generoo to create. Example: `project`
-- name - what you want to name what generoo is creating. This will be used as the root directory name. Example: `test`
+- `goal` - what you want generoo to do. Example: `generate`
+- `scope` - what you want generoo to create. Example: `project`
+- `name` - what you want to name what generoo is creating. This will be used as the root directory name. Example: `test`
 
 Positional Arguments (in the order they appear):
 
@@ -62,31 +72,46 @@ Here is an example of a `template-configuration.json` file:
 {
   "variables": [
     {
-      "name": "variable_name",
-      "value": "variable value"
+      "name": "group_id",
+      "value": "tech.armyofone"
     }
   ],
   "prompts": [
     {
-      "name": "name",
-      "text": "Enter name",
-      "type": "STRING",
-      "options": ["Option1", "Option2"],
-      "default": "default",
-      "validations": [
+      "name": "artifact_id",
+      "value": "example"
+    },
+    {
+      "name": "guava_version",
+      "text": "Enter the desired guava version",
+      "options": ["19.0", "27.1-jre"],
+      "default": "27.1-jre"
+    },
+    {
+      "name": "database",
+      "text": "Database?",
+      "type": "BOOL",
+      "default": "Yes",
+      "follow_ups": [
         {
-          "evaluation": "REGEX",
-          "value": "/^\S+$/g"
+          "conditions": [
+            {
+              "evaluation": "BOOL",
+              "value": true
+            }
+          ],
+          "name": "database_type",
+          "text": "What type of database would you like?",
+          "options": ["Postgres", "Cassandra"],
+          "transformations": [
+            {
+              "name": "database_type_capitalized",
+              "transformation": "PERIODS"
+            }
+          ]
         }
       ]
     }
-  ],
-  "transformations": [
-      {
-        "reference": "artifact_id",
-        "name": "artifact_id_capitalized",
-        "transformation": "CAPITALIZED"
-      }
   ],
   "mappings": [
     {
@@ -135,9 +160,48 @@ Types
 
 | Types | Notes |
 | --- | --- |
-| STRING |  Captures a string value, can be evaluated against regular expressions or against provided options. Default if no type provided.|
+| STRING |  DEFAULT. Captures a string value, can be evaluated against regular expressions or against provided options. |
 | INT | Captures an integer value, can be evaluated against a provided integer validation or provided options. |
 | BOOL | Captures a `yes` or `no` answer. The options provided will be evaluated in addition to built in yes/no options. Successfully evaluates against `yes`, `YES`, `Yes`, `y`, `Y`, `N`, `n`, `no`, `No`, `NO` |
+
+Transformations
+
+Each prompt and follow-up can take a list of transformations. 
+
+
+```json
+"transformations": [
+  {
+    "name": "field_capitalized",
+    "transformation": "CAPITALIZED"
+  },
+  {
+    "name": "field_slashes",
+    "transformation": "SLASHES"
+  },
+  {
+    "name": "field_periods",
+    "transformation": "PERIODS"
+  }
+]
+
+```
+
+These transformations will perform casing and separator changes.
+
+For example:
+
+Using a `"DASHES"` transformation on `tech.armyofone` yields `tech-armyofone`.
+
+| Transformation | Example |
+|---|---|
+|SNAKE | army_of_one  |
+|DASHES | army-of-one  |
+|SLASHES | army/of/one |
+|PERIODS | army.of.one  |
+|CAMEL | armyOfOne |
+|CAPITALIZED | ArmyOfOne |
+|CAPITALIZED_WITH_SPACES | Army Of One |
 
 Follow Ups
 
@@ -157,25 +221,10 @@ Follow up prompts are prompts with validations. Here's an example of a prompt wi
       }
     ],
     "name": "time",
-    "text": "What time do you want to go?",
-    "type": "STRING"    
+    "text": "What time do you want to go?"
   }
 }
 ```
-
-#### Transformations
-
-Transformations are done after the prompts are entered by the user. 
-
-Using a `"DASHES"` transformation on `tech.armyofone` yields `tech-armyofone`.
-
-| Transformation | Example |
-|---|---|
-|DASHES | army-of-one  |
-|SLASHES | army/of/one |
-|PERIODS | army.of.one  |
-|CAPITALIZED | ArmyOfOne |
-|CAPITALIZED_WITH_SPACES | Army Of One |
 
 #### Mappings
 
@@ -191,31 +240,12 @@ the template, then mustache section syntax may be used. For example:
 
 ```json
   {
-    "prompts": [
-      {
-        "name": "database",
-        "text": "Do you want a database?",
-        "default": "No",
-        "type": "BOOL",
-        "follow_ups": [
-          {
-            "conditions": [
-              {
-                "evaluation": "BOOL",
-                "value": true
-              }
-            ],
-            "name": "database_type",
-            "text": "What type of database do you want?",
-            "options": ["Postgres", "Cassandra"]
-          }
-        ]
-      }
-    ],
+    ...
     "mappings": {
       "template": "database/",
       "destination": "{{#database}}/database/{{database_type}}/{{/database}}"
-    }
+    },
+    ...
   }
 ```
 
@@ -239,7 +269,10 @@ If you would like to proceed with the `run-configuration.json` fields without be
  the`-c`or `--no-config` flags in the run command: `generoo generate resource --no-config`.
  
 **TODO**: 
-* Conditional directories
 * Add template validations
-* Add mapping and prompt sequencing. Example, collect prompts for sequence 1, then map sequence 1 before continuing to 2.
-* Add support for recursive templating (allow templates to be in correct file structure or template dir)
+
+### Dependencies:
+
+https://mustache.github.io/
+https://github.com/defunkt/pystache
+https://pypi.org/project/jsonschema/
