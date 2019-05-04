@@ -1,0 +1,15 @@
+package {{group_id}}.{{artifact_id_periods}}.service;
+
+import {{group_id}}.{{artifact_id_periods}}.repository.{{artifact_id_capitalized}}Repository;
+import org.springframework.stereotype.Service;
+
+@Service
+public class {{artifact_id_capitalized}}Service {
+
+  private final {{artifact_id_capitalized}}Repository {{artifact_id_camel}}Repository;
+
+  public {{artifact_id_capitalized}}Service({{artifact_id_capitalized}}Repository {{artifact_id_camel}}Repository) {
+    this.{{artifact_id_camel}}Repository = {{artifact_id_camel}}Repository;
+  }
+
+}

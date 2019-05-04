@@ -4,7 +4,7 @@ block_cipher = None
 
 
 a = Analysis(['generoo.py'],
-             pathex=['/development/armyofone/microservice-generator'],
+             pathex=['/development/armyofone/generoo'],
              binaries=[],
              datas=[('archetypes', 'archetypes/*')],
              hiddenimports=[],
@@ -21,7 +21,7 @@ exe = EXE(pyz,
           a.scripts,
           [],
           exclude_binaries=True,
-          name='generator',
+          name='generoo',
           debug=False,
           bootloader_ignore_signals=False,
           strip=False,
@@ -33,4 +33,4 @@ coll = COLLECT(exe,
                a.datas,
                strip=False,
                upx=True,
-               name='generator')
+               name='generoo')

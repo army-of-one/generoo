@@ -1,18 +1,18 @@
 import argparse
-import os
 import json
+import os
+
 from pick import pick
 
-from utils import handle_prompt, convert_to_hyphen_case, package_to_file, convert_to_period_case, \
+from utils import handle_prompt, convert_to_dashes, convert_to_slashes, convert_to_periods, \
     convert_to_caps_no_spaces, convert_to_caps_with_spaces, render_template_to_directory, render_destination_path, \
-    is_valid_input
-
+    is_valid_input, equals_ignore_case, convert_to_snake, convert_to_camel, yes_no_to_bool, convert_to_lower_with_spaces
 
 generate_options = ['generate', 'gen', 'g']
 project_options = ['project', 'proj', 'pro', 'p']
 excluded_archetypal_directories = ['common', '__pycache__']
 archetype_default = 'archetypes'
-template_configuration_filename = 'template-config.json'
+project_template_filename = 'project-template-config.json'
 
 
 def create_configuration_directory(args: argparse.Namespace, run_configuration: dict):
@@ -97,7 +97,7 @@ def get_template_configuration_metadata(args: argparse.Namespace) -> (str, str):
         language, framework, version = prompt_for_archetype()
         directory = f'{directory}/{language}/{framework}/{version}/'
         if not config:
-            config = f'{directory}{template_configuration_filename}'
+            config = f'{directory}{project_template_filename}'
     elif directory is None:
         directory = os.path.dirname(config)
     return directory, config
@@ -133,59 +133,70 @@ def process_follow_ups(prompt_response: str, prompt: dict, run_configuration: di
                     process_prompt(follow_up, run_configuration)
 
 
-def resolve_prompts(run_configuration: dict, template_configuration: dict) -> dict:
+def resolve_prompts(run_configuration: dict, template_configuration: dict, auto_configure: bool) -> dict:
     """
     The second step of the lifecycle is to collect the user inputs via the prompts. The values will also be written to
     the run configuration.
 
     :param run_configuration:
     :param template_configuration:
+    :param auto_configure:
     :return:
     """
     prompts = template_configuration['prompts']
     if prompts:
         for prompt in prompts:
             if prompt['name'] and prompt['text']:
-                process_prompt(prompt, run_configuration)
+                process_prompt(prompt, run_configuration, auto_configure)
             else:
                 raise AttributeError
     return run_configuration
 
 
-def process_prompt(prompt, run_configuration):
-    value = handle_prompt(prompt)
-    run_configuration[prompt['name']] = value
+def process_prompt(prompt, run_configuration, auto_configure):
+    override = prompt.get('override')
+    if auto_configure and override:
+        value = prompt['default']
+    else:
+        value = handle_prompt(prompt)
+    name = prompt['name']
+    run_configuration[name] = value
+    resolve_transformations(name, prompt.get('transformations'), run_configuration)
     process_follow_ups(value, prompt, run_configuration)
 
 
-def resolve_transformations(run_configuration: dict, template_configurations: dict) -> dict:
+def resolve_transformations(reference: str, transformations: dict, run_configuration: dict) -> dict:
     """
     The third step of the lifecycle is to make the desired transformations. The values will also be written to the run
     configuration.
 
+    :param reference
     :param run_configuration:
-    :param template_configurations:
+    :param transformations:
     :return:
     """
-    transformations = template_configurations['transformations']
     if transformations:
         for transformation in transformations:
             name = transformation['name']
-            reference = transformation['reference']
             transformation_type = transformation['transformation']
-            if name and reference and transformation:
-                if transformation_type == 'DASHES':
-                    run_configuration[name] = convert_to_hyphen_case(run_configuration[reference])
-                if transformation_type == 'SLASHES':
-                    run_configuration[name] = package_to_file(run_configuration[reference])
-                if transformation_type == 'PERIODS':
-                    run_configuration[name] = convert_to_period_case(run_configuration[reference])
-                if transformation_type == 'CAPITALIZED':
-                    run_configuration[name] = convert_to_caps_no_spaces(run_configuration[reference])
-                if transformation_type == 'CAPITALIZED_WITH_SPACES':
-                    run_configuration[name] = convert_to_caps_with_spaces(run_configuration[reference])
+            if equals_ignore_case(transformation_type, 'SNAKE'):
+                run_configuration[name] = convert_to_snake(run_configuration[reference])
+            elif equals_ignore_case(transformation_type, 'DASHES'):
+                run_configuration[name] = convert_to_dashes(run_configuration[reference])
+            elif equals_ignore_case(transformation_type, 'SLASHES'):
+                run_configuration[name] = convert_to_slashes(run_configuration[reference])
+            elif equals_ignore_case(transformation_type, 'PERIODS'):
+                run_configuration[name] = convert_to_periods(run_configuration[reference])
+            elif equals_ignore_case(transformation_type, 'LOWER'):
+                run_configuration[name] = convert_to_lower_with_spaces(run_configuration[reference])
+            elif equals_ignore_case(transformation_type, 'CAMEL'):
+                run_configuration[name] = convert_to_camel(run_configuration[reference])
+            elif equals_ignore_case(transformation_type, 'CAPITALIZED'):
+                run_configuration[name] = convert_to_caps_no_spaces(run_configuration[reference])
+            elif equals_ignore_case(transformation_type, 'CAPITALIZED_WITH_SPACES'):
+                run_configuration[name] = convert_to_caps_with_spaces(run_configuration[reference])
             else:
-                raise AttributeError
+                raise AttributeError(f'Did not recognize the transformation type provided: {transformation_type}')
     return run_configuration
 
 
@@ -223,13 +234,32 @@ def recursively_fill_template_in_dir(args: argparse.Namespace, template_dir: str
     template_dir_len = len(template_dir)
     for root, dirs, files in os.walk(template_dir, topdown=False):
         for name in files:
-            print(root)
             file_destination = os.path.join(args.name, destination, root[template_dir_len:], name)
             if len(file_destination) > 0:
-                render_template_to_directory(render_destination_path(file_destination, run_configurations), os.path.join(root, name), run_configurations)
+                file_destination, passes = evaluate_filepath_conditions(file_destination, run_configurations)
+                if passes:
+                    print(file_destination)
+                    render_template_to_directory(render_destination_path(file_destination, run_configurations), os.path.join(root, name), run_configurations)
 
 
-def extract_run_configuration(template_configuration: dict) -> dict:
+def evaluate_filepath_conditions(file_destination: str, run_configurations: dict) -> (str, bool):
+    conditional_tag = '{{#'
+    tag_close = '}}'
+    conditional_tag_len = len(conditional_tag)
+    tag_close_len = len(tag_close)
+    conditional_tag_index = file_destination.find(conditional_tag)
+    while conditional_tag_index >= 0:
+        tag_close_index = file_destination.find(tag_close, conditional_tag_index)
+        tag_start_index = conditional_tag_index + conditional_tag_len
+        tag_key = file_destination[tag_start_index:tag_close_index]
+        if tag_key not in run_configurations or not yes_no_to_bool(run_configurations[tag_key]):
+            return file_destination, False
+        file_destination = file_destination[:conditional_tag_index] + file_destination[tag_close_index+tag_close_len:]
+        conditional_tag_index = file_destination.find(conditional_tag, tag_close_index + tag_close_len)
+    return file_destination, True
+
+
+def extract_run_configuration(template_configuration: dict, auto_configure: bool) -> dict:
     """
     Runs the lifecycle events for loading the template file. Returns a run configuration.
 
@@ -237,22 +267,48 @@ def extract_run_configuration(template_configuration: dict) -> dict:
     :return:
     """
     run_configuration = resolve_variables(template_configuration)
-    run_configuration = resolve_prompts(run_configuration, template_configuration)
-    run_configuration = resolve_transformations(run_configuration, template_configuration)
+    run_configuration = resolve_prompts(run_configuration, template_configuration, auto_configure)
     return run_configuration
+
+
+def override_defaults(template_configuration, run_configuration):
+    prompts = template_configuration['prompts']
+    if prompts:
+        for prompt in prompts:
+            override_default(prompt, run_configuration)
+    return template_configuration
+
+
+def override_default(prompt, run_configuration):
+    if prompt['name'] in run_configuration:
+        prompt['default'] = run_configuration[prompt['name']]
+        prompt['override'] = True
+        follow_ups = prompt.get('follow_ups')
+        if follow_ups:
+            for follow_up in follow_ups:
+                override_default(follow_up, run_configuration)
+
+
+def load_template_configuration(template_file) -> dict:
+    raw_configuration = open(template_file)
+    template_configuration = json.loads(raw_configuration.read())
+    raw_configuration.close()
+    return template_configuration
 
 
 def generate_project(args: argparse.Namespace):
     print('No pre-existing generoo run configuration found...')
     template_directory, template_file = get_template_configuration_metadata(args)
-    raw_configuration = open(template_file)
-    template_configuration = json.loads(raw_configuration.read())
-    raw_configuration.close()
+    template_configuration = load_template_configuration(template_file)
     try:
-        run_configuration = get_generoo_config(args)
+        if not args.no_config:
+            run_configuration = get_generoo_config(args)
+            template_configuration = override_defaults(template_configuration, run_configuration)
+        run_configuration = extract_run_configuration(template_configuration, args.auto_config)
     except IOError:
-        run_configuration = extract_run_configuration(template_configuration)
-        create_configuration_directory(args, run_configuration)
+        print('Failed to find and/or load existing run configuration.')
+        run_configuration = extract_run_configuration(template_configuration, args.auto_config)
+    create_configuration_directory(args, run_configuration)
     fill_in_templates(args, template_directory, template_configuration, run_configuration)
 
 
@@ -270,12 +326,14 @@ if __name__ == "__main__":
     parser.add_argument('scope', help='A generator scope. Examples: project, resource')
     parser.add_argument('name', help='The name for the scope. Example: test, pet, inventory')
 
-    # Keyword Arguments
-    parser.add_argument('-n', '--no-config',
+    # Flag Arguments
+    parser.add_argument('-n', '--no-config', action='store_true',
                         help='Will run generoo without a pre-existing configuration.')
-    parser.add_argument('-a', '--auto-config',
-                        help='Will run generoo using the pre-existing configuration '
-                             'and only prompting for values not present in the configuration.')
+    parser.add_argument('-a', '--auto-config', action='store_true',
+                        help='Will run generoo using the pre-existing configuration'
+                             'and only prompt for values not present in the configuration.')
+
+    # Keyword Arguments
     parser.add_argument('-c', '--template-config',
                         help='Points to a location on the system that contains a custom template config.')
     parser.add_argument('-t', '--templates', default=archetype_default,
@@ -284,3 +342,5 @@ if __name__ == "__main__":
 
     arguments = parser.parse_args()
     run(arguments)
+
+
