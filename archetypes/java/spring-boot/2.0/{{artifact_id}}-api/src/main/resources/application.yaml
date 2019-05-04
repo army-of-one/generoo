@@ -1,0 +1,62 @@
+# Disable feature detection by this undocumented parameter. Check the org.hibernate.engine.jdbc.internal.JdbcServiceImpl.configure method for more details.
+# Because detection is disabled you have to set correct dialect by hand.
+spring.jpa:
+  database-platform: org.hibernate.dialect.PostgreSQL95Dialect
+  properties.hibernate.temp.use_jdbc_metadata_defaults: false
+
+
+server:
+  port: 54321
+  servlet.context-path: /{{artifact_id}}
+
+management.security.enabled: false
+
+---
+
+spring.profiles: local
+
+database:
+  server: 35.185.60.60
+  port: 5432
+  name: {{project}}
+  schema: {{artifact_id_snake}}
+  username: postgres
+  password: shamelesspass
+
+---
+
+spring.profiles: dev
+
+database:
+  server: 35.185.60.60
+  port: 5432
+  name: {{project}}
+  schema: {{artifact_id_snake}}
+  username: postgres
+  password: shamelesspass
+
+---
+
+spring.profiles: qa
+
+database:
+  server: 35.185.60.60
+  port: 5432
+  name: {{project}}
+  schema: {{artifact_id_snake}}
+  username: postgres
+  password: shamelesspass
+
+---
+
+spring.profiles: prod
+
+database:
+  server: 35.185.60.60
+  port: 5432
+  name: {{project}}
+  schema: {{artifact_id_snake}}
+  username: postgres
+  password: shamelesspass
+
+management.security.enabled: true
