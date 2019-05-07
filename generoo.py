@@ -1,5 +1,5 @@
 import argparse
-import json
+import yaml
 import os
 
 from pick import pick
@@ -28,7 +28,7 @@ def create_configuration_directory(args: argparse.Namespace, run_configuration: 
     except FileExistsError:
         print('Generoo configuration directory already exists.')
     run_configuration_file = open(f'{generoo_directory}/run-configuration.json', 'w')
-    run_configuration_file.write(json.dumps(run_configuration, indent=4, sort_keys=True))
+    run_configuration_file.write(yaml.safe_dump(run_configuration, indent=4, sort_keys=True))
     run_configuration_file.close()
     print('Successfully created generoo configuration directory.')
 
@@ -82,7 +82,7 @@ def get_generoo_config(args: argparse.Namespace) -> dict:
     :return:
     """
     configuration = open(f'{args.name}/.generoo/run-configuration.json')
-    return json.loads(configuration.read())
+    return yaml.safe_load(configuration.read())
 
 
 def get_template_configuration_metadata(args: argparse.Namespace) -> (str, str):
@@ -291,7 +291,7 @@ def override_default(prompt, run_configuration):
 
 def load_template_configuration(template_file) -> dict:
     raw_configuration = open(template_file)
-    template_configuration = json.loads(raw_configuration.read())
+    template_configuration = yaml.safe_load(raw_configuration.read())
     raw_configuration.close()
     return template_configuration
 
