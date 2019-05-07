@@ -47,6 +47,7 @@ Positional Arguments (in the order they appear):
 |`-a`, `--auto-config` | Will run generoo using the pre-existing configuration and only prompt for values not present in the configuration.  |
 |`-c`, `--template-config` | Points to a location on the system that contains a custom template config.  |
 |`-t`, `--templates` | Points to a directory on the system that contains templates for a corresponding template config.  |
+|`-r`, `--run-configuration` | Points to a file on the system that contains a run configuration for a corresponding template config. |
 
 ### Run from Sources
 
