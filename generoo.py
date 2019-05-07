@@ -87,11 +87,20 @@ def get_generoo_config(args: argparse.Namespace) -> dict:
 
 def get_template_configuration_metadata(args: argparse.Namespace) -> (str, str):
     """
+    Resolves the configuration file location and the directory in which templates are located.
+
+    If the directory provided is the archetype directory, then additional prompts will be given to the user to determine
+    the language, framework, and version they desire to use.
+
+    If no directory is provided, then the directory where the configuration file is
+    located will be used.
+
     :param args:
     :return:
     """
     config = args.template_config
     directory = args.templates
+    scope = args.scope
 
     if directory == archetype_default:
         language, framework, version = prompt_for_archetype()
@@ -123,14 +132,26 @@ def resolve_variables(template_configuration: dict) -> dict:
     return run_configuration
 
 
-def process_follow_ups(prompt_response: str, prompt: dict, run_configuration: dict):
+def process_follow_ups(prompt_response: str, prompt: dict, run_configuration: dict, auto_configure: bool):
+    """
+    Recursively handles follow up prompts.
+
+    Checks if the follow up question has a condition. If it does have a condition, then the condition is evaluated
+    against the response of the parent prompt.
+
+    :param prompt_response:
+    :param prompt:
+    :param run_configuration:
+    :param auto_configure:
+    :return:
+    """
     follow_ups = prompt.get('follow_ups')
     if follow_ups:
         for follow_up in follow_ups:
             conditions = follow_up.get('conditions')
             if conditions:
                 if is_valid_input(prompt_response, conditions):
-                    process_prompt(follow_up, run_configuration)
+                    process_prompt(follow_up, run_configuration, auto_configure)
 
 
 def resolve_prompts(run_configuration: dict, template_configuration: dict, auto_configure: bool) -> dict:
@@ -154,6 +175,24 @@ def resolve_prompts(run_configuration: dict, template_configuration: dict, auto_
 
 
 def process_prompt(prompt, run_configuration, auto_configure):
+    """
+    Processes a prompt for a user.
+
+    If being generated in a directory that already has a run_configuration file and with
+    the auto configure flag set to true, this function will apply the run_configuration value for the prompt as the
+    default value.
+
+    If the run configuration exists and the application is running without the no configuration flag, then the default
+    value will be overridden and the user will be able to easily use that default.
+
+    After taking in each prompt, the transformations for that prompt will be applied and the follow up prompts will be
+    evaluated.
+
+    :param prompt:
+    :param run_configuration:
+    :param auto_configure:
+    :return:
+    """
     override = prompt.get('override')
     if auto_configure and override:
         value = prompt['default']
@@ -162,13 +201,14 @@ def process_prompt(prompt, run_configuration, auto_configure):
     name = prompt['name']
     run_configuration[name] = value
     resolve_transformations(name, prompt.get('transformations'), run_configuration)
-    process_follow_ups(value, prompt, run_configuration)
+    process_follow_ups(value, prompt, run_configuration, auto_configure)
 
 
 def resolve_transformations(reference: str, transformations: dict, run_configuration: dict) -> dict:
     """
-    The third step of the lifecycle is to make the desired transformations. The values will also be written to the run
-    configuration.
+    Prompts accept transformations, which are meant to take the input and then convert it to a different format.
+
+    The transformation types can be found below or in the README.
 
     :param reference
     :param run_configuration:
@@ -201,6 +241,22 @@ def resolve_transformations(reference: str, transformations: dict, run_configura
 
 
 def fill_in_templates(args: argparse.Namespace, template_directory: str, template_configurations: dict, run_configurations: dict):
+    """
+    Apply the run configuration to the templates in the provided template directory.
+
+    Templates can be provided through the mapping field in the template configuration. If the mapping destination is a
+    directory, then it is assumed that the directory is structured in the way the output should be structured, and all
+    replacements will happen in place with the given structure.
+
+    If no mappings are provided, then the assumption is that the provided template directory is structured in the way
+    the output should be structured, and all replacements will happen in place with the given structure.
+
+    :param args:
+    :param template_directory:
+    :param template_configurations:
+    :param run_configurations:
+    :return:
+    """
     mappings = template_configurations.get('mappings')
     if mappings:
         for mapping in mappings:
@@ -222,8 +278,7 @@ def fill_in_templates(args: argparse.Namespace, template_directory: str, templat
 
 def recursively_fill_template_in_dir(args: argparse.Namespace, template_dir: str, destination: str, run_configurations: dict):
     """
-    Walk the directory structure non-flat template directory and render both the template content as well as the destination
-    path.
+    Walk the non-flat template directory and render both the template content as well as the destination path.
 
     :param args:
     :param template_dir:
@@ -243,6 +298,20 @@ def recursively_fill_template_in_dir(args: argparse.Namespace, template_dir: str
 
 
 def evaluate_filepath_conditions(file_destination: str, run_configurations: dict) -> (str, bool):
+    """
+    File paths passed will be checked for partial Mustache syntax for sections. If a section tag is provided ({{#section}},
+    then the run configuration is checked for the tag.
+
+    If the condition is met, then the destination path will be cleaned
+    of the section tags and a true value will be returned.
+
+    If the condition is not met, then the string as it is currently
+    being processed at the time of failure is returned, and a false value is returned with it.
+
+    :param file_destination:
+    :param run_configurations:
+    :return:
+    """
     conditional_tag = '{{#'
     tag_close = '}}'
     conditional_tag_len = len(conditional_tag)
@@ -264,6 +333,7 @@ def extract_run_configuration(template_configuration: dict, auto_configure: bool
     Runs the lifecycle events for loading the template file. Returns a run configuration.
 
     :param template_configuration:
+    :param auto_configure:
     :return:
     """
     run_configuration = resolve_variables(template_configuration)
@@ -272,6 +342,14 @@ def extract_run_configuration(template_configuration: dict, auto_configure: bool
 
 
 def override_defaults(template_configuration, run_configuration):
+    """
+    Pre-processing step that will go through each prompt and replace the default value of that prompt with the value,
+    if present, from the run configuration.
+
+    :param template_configuration:
+    :param run_configuration:
+    :return:
+    """
     prompts = template_configuration['prompts']
     if prompts:
         for prompt in prompts:
@@ -280,6 +358,13 @@ def override_defaults(template_configuration, run_configuration):
 
 
 def override_default(prompt, run_configuration):
+    """
+    Replaces the default value of the given prompt with its value from the run configuration, if present.
+
+    :param prompt:
+    :param run_configuration:
+    :return:
+    """
     if prompt['name'] in run_configuration:
         prompt['default'] = run_configuration[prompt['name']]
         prompt['override'] = True
@@ -290,6 +375,14 @@ def override_default(prompt, run_configuration):
 
 
 def load_template_configuration(template_file) -> dict:
+    """
+    Opens the template file in YAML or JSON format and loads it into a python dict.
+
+    Will raise an error if any of the steps fail.
+
+    :param template_file:
+    :return:
+    """
     raw_configuration = open(template_file)
     template_configuration = yaml.safe_load(raw_configuration.read())
     raw_configuration.close()
@@ -297,6 +390,12 @@ def load_template_configuration(template_file) -> dict:
 
 
 def generate_project(args: argparse.Namespace):
+    """
+    Generates a project based on the command line arguments given.
+    :param args:
+    :return:
+    """
+
     print('No pre-existing generoo run configuration found...')
     template_directory, template_file = get_template_configuration_metadata(args)
     template_configuration = load_template_configuration(template_file)
