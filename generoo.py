@@ -82,7 +82,10 @@ def get_generoo_config(args: argparse.Namespace) -> dict:
     :param args:
     :return:
     """
-    configuration = open(f'{args.name}/.generoo/run-configuration.json')
+    if args.run_configuration:
+        configuration = open(args.run_configuration)
+    else:
+        configuration = open(f'{args.name}/.generoo/run-configuration.json')
     return yaml.safe_load(configuration.read())
 
 
@@ -438,6 +441,9 @@ if __name__ == "__main__":
                         help='Points to a location on the system that contains a custom template config.')
     parser.add_argument('-t', '--templates', default=archetype_default,
                         help='Points to a directory on the system that contains templates for a corresponding '
+                             'template config')
+    parser.add_argument('-r', '--run-configuration',
+                        help='Points to a file on the system that contains a run configuration for a corresponding '
                              'template config')
 
     arguments = parser.parse_args()
