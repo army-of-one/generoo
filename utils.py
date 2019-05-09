@@ -12,7 +12,7 @@ def convert_to_snake(string):
 
 
 def convert_to_dashes(string):
-    return re.sub(r'[._/|\s]', '.', cap_sanitized(string)).lower()
+    return re.sub(r'[._/|\s]', '-', cap_sanitized(string)).lower()
 
 
 def convert_to_periods(string):
