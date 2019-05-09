@@ -14,6 +14,10 @@
         {
           "name": "group_id_slashes",
           "transformation": "SLASHES"
+        },
+        {
+          "name": "group_id_dashes",
+          "transformation": "DASHES"
         }
       ]
     },
