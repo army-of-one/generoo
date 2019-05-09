@@ -34,6 +34,9 @@
 		<hibernate.version>5.2.2.Final</hibernate.version>
 		<jpa.version>2.0.7.RELEASE</jpa.version>
 		{{/hibernate}}
+		<mockito.version>2.18.0</mockito.version>
+		<jupiter.version>5.1.0</jupiter.version>
+		<spring.boot.version>2.0.3.RELEASE</spring.boot.version>
 	</properties>
 
 	<dependencyManagement>
@@ -53,6 +56,7 @@
 			<dependency>
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-starter-web</artifactId>
+				<version>${spring.boot.version}</version>
 			</dependency>
 
 			<dependency>
@@ -88,6 +92,26 @@
 			</dependency>
 
 			{{/hibernate}}
+			<dependency>
+				<groupId>org.junit.jupiter</groupId>
+				<artifactId>junit-jupiter-engine</artifactId>
+				<version>${jupiter.version}</version>
+				<scope>test</scope>
+			</dependency>
+
+			<dependency>
+				<groupId>org.mockito</groupId>
+				<artifactId>mockito-junit-jupiter</artifactId>
+				<version>${mockito.version}</version>
+				<scope>test</scope>
+			</dependency>
+
+			<dependency>
+				<groupId>org.mockito</groupId>
+				<artifactId>mockito-core</artifactId>
+				<version>${mockito.version}</version>
+				<scope>test</scope>
+			</dependency>
 		</dependencies>
 	</dependencyManagement>
 

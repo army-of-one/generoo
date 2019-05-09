@@ -40,7 +40,53 @@
       "name": "hibernate",
       "text": "Do you want to use hibernate with postgres?",
       "type": "BOOL",
-      "default": "Yes"
+      "default": "Yes",
+      "follow_ups": [
+        {
+          "conditions": [
+            {
+              "evaluation": "BOOL",
+              "value": true
+            }
+          ],
+          "name": "url_flag",
+          "text": "Do you know the JDBC url?",
+          "default": "Yes",
+          "type": "BOOL",
+          "follow_ups": [
+            {
+              "conditions": [
+                {
+                  "evaluation": "BOOL",
+                  "value": true
+                }
+              ],
+              "name": "url",
+              "text": "Enter the JDBC URL (note, this will be applied to all environments)"
+            },
+            {
+              "conditions": [
+                {
+                  "evaluation": "BOOL",
+                  "value": true
+                }
+              ],
+              "name": "url",
+              "text": "Database Username (note, this will be applied to all environments)"
+            },
+            {
+              "conditions": [
+                {
+                  "evaluation": "BOOL",
+                  "value": true
+                }
+              ],
+              "name": "url",
+              "text": "Database Password (note, this will be applied to all environments)"
+            }
+          ]
+        }
+      ]
     }
   ]
 }
