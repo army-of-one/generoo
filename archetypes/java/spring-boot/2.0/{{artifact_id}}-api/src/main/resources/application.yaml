@@ -1,62 +1,59 @@
+{{#hibernate}}
 # Disable feature detection by this undocumented parameter. Check the org.hibernate.engine.jdbc.internal.JdbcServiceImpl.configure method for more details.
 # Because detection is disabled you have to set correct dialect by hand.
 spring.jpa:
   database-platform: org.hibernate.dialect.PostgreSQL95Dialect
   properties.hibernate.temp.use_jdbc_metadata_defaults: false
-
+{{/hibernate}}
 
 server:
-  port: 54321
+  port: 8080
   servlet.context-path: /{{artifact_id}}
 
 management.security.enabled: false
 
 ---
 
-spring.profiles: local
-
-database:
-  server: 35.185.60.60
-  port: 5432
-  name: {{project}}
-  schema: {{artifact_id_snake}}
-  username: postgres
-  password: shamelesspass
-
----
-
-spring.profiles: dev
-
-database:
-  server: 35.185.60.60
-  port: 5432
-  name: {{project}}
-  schema: {{artifact_id_snake}}
-  username: postgres
-  password: shamelesspass
+spring:
+  profiles: local
+  {{#hibernate}}datasource:
+    driver-class-name: org.postgresql.Driver
+    url: {{url}}
+    username: {{username}}
+    password: {{password}}
+  {{/hibernate}}
 
 ---
 
-spring.profiles: qa
-
-database:
-  server: 35.185.60.60
-  port: 5432
-  name: {{project}}
-  schema: {{artifact_id_snake}}
-  username: postgres
-  password: shamelesspass
+spring:
+  profiles: dev
+  {{#hibernate}}datasource:
+    driver-class-name: org.postgresql.Driver
+    url: {{url}}
+    username: {{username}}
+    password: {{password}}
+  {{/hibernate}}
 
 ---
 
-spring.profiles: prod
+spring:
+  profiles: qa
+  {{#hibernate}}datasource:
+    driver-class-name: org.postgresql.Driver
+    url: {{url}}
+    username: {{username}}
+    password: {{password}}
+  {{/hibernate}}
 
-database:
-  server: 35.185.60.60
-  port: 5432
-  name: {{project}}
-  schema: {{artifact_id_snake}}
-  username: postgres
-  password: shamelesspass
+---
+
+spring:
+  profiles: prod
+  {{#hibernate}}datasource:
+    driver-class-name: org.postgresql.Driver
+    url: {{url}}
+    username: {{username}}
+    password: {{password}}
+  {{/hibernate}}
 
 management.security.enabled: true
