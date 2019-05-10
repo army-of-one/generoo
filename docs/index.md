@@ -1,4 +1,4 @@
-<img src="https://github.com/army-of-one/generoo/blob/master/docs/generoo_icon.jpg" width="200" height="188" />
+<img src="generoo_icon.jpg" width="200" height="188" />
 
 # What does it do?
 
