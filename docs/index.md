@@ -1,3 +1,5 @@
+<img src="https://github.com/army-of-one/generoo/blob/master/docs/generoo_icon.jpg" width="200" height="188" />
+
 # What does it do?
 
 Generoo is a tool that can be used to create customizable and reusable templates for generating anything from single
@@ -9,8 +11,6 @@ Unlike other popular templating frameworks, Generoo requires no additional codin
 
 Whether you want to generate a pre-configured project from the built-in Generoo archetypes, or you created your own template,
 it can all be achieved through a JSON configuration file and a template folder.
-
-See the [documentation](faq.md) for more details.
 
 # Usage
 
