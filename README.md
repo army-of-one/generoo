@@ -1,5 +1,7 @@
 # Generoo
 
+<img src="https://github.com/army-of-one/generoo/blob/master/docs/generoo_icon.jpg" width="200" height="188" />
+
 Code generation driven by templating and configuration.
 
 ## What does it do?
