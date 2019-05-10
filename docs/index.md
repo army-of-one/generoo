@@ -1,4 +1,4 @@
-<img src="generoo_icon.jpg" width="200" height="188" />
+<img src="generoo_no_background.jpg" width="200" height="188" />
 
 # What does it do?
 
