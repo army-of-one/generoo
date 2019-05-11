@@ -28,7 +28,7 @@ def create_configuration_directory(args: argparse.Namespace, run_configuration: 
         os.makedirs(generoo_directory)
     except FileExistsError:
         print('Generoo configuration directory already exists.')
-    run_configuration_file = open(f'{generoo_directory}/run-configuration.json', 'w')
+    run_configuration_file = open(f'{generoo_directory}/run-configuration.yml', 'w')
     run_configuration_file.write(yaml.safe_dump(run_configuration, indent=4, sort_keys=True))
     run_configuration_file.close()
     print('Successfully created generoo configuration directory.')
@@ -85,8 +85,13 @@ def get_generoo_config(args: argparse.Namespace) -> dict:
     if args.run_configuration:
         configuration = open(args.run_configuration)
     else:
-        configuration = open(f'{args.name}/.generoo/run-configuration.json')
+        configuration = open(f'{args.name}/.generoo/run-configuration.yml')
     return yaml.safe_load(configuration.read())
+
+
+def full_scope_name(scope):
+    if scope in project_options:
+        return project_options[0]
 
 
 def get_template_configuration_metadata(args: argparse.Namespace) -> (str, str):
@@ -103,14 +108,14 @@ def get_template_configuration_metadata(args: argparse.Namespace) -> (str, str):
     :return:
     """
     config = args.template_config
-    directory = args.templates
+    directory = args.template
     scope = args.scope
 
     if directory == archetype_default:
         language, framework, version = prompt_for_archetype()
         directory = f'{directory}/{language}/{framework}/{version}/'
         if not config:
-            config = f'{directory}{scope}{template_filename}'
+            config = f'{directory}{full_scope_name(scope)}{template_filename}'
     elif directory is None:
         directory = os.path.dirname(config)
     return directory, config
@@ -126,7 +131,7 @@ def resolve_variables(template_configuration: dict) -> dict:
     :return:
     """
     run_configuration = {}
-    variables = template_configuration['variables']
+    variables = template_configuration.get('variables')
     if variables:
         for variable in variables:
             if variable['name']:
@@ -244,7 +249,7 @@ def resolve_transformations(reference: str, transformations: dict, run_configura
     return run_configuration
 
 
-def fill_in_templates(args: argparse.Namespace, template_directory: str, template_configurations: dict, run_configurations: dict):
+def fill_in_templates(args: argparse.Namespace, template_path: str, template_configurations: dict, run_configurations: dict):
     """
     Apply the run configuration to the templates in the provided template directory.
 
@@ -256,7 +261,7 @@ def fill_in_templates(args: argparse.Namespace, template_directory: str, templat
     the output should be structured, and all replacements will happen in place with the given structure.
 
     :param args:
-    :param template_directory:
+    :param template_path:
     :param template_configurations:
     :param run_configurations:
     :return:
@@ -273,11 +278,13 @@ def fill_in_templates(args: argparse.Namespace, template_directory: str, templat
                     else:
                         raise AttributeError(f'{template} is a directory. {destination} must be a directory.')
                 else:
-                    os.makedirs(template_directory, exist_ok=True)
-                    render_template_to_directory(render_destination_path(destination, run_configurations), os.path.join(template_directory, template), run_configurations)
+                    os.makedirs(template_path, exist_ok=True)
+                    render_template_to_directory(render_destination_path(destination, run_configurations), os.path.join(template_path, template), run_configurations)
     else:
-        if os.path.isdir(template_directory):
-            recursively_fill_template_in_dir(args, template_directory, os.curdir, run_configurations)
+        if os.path.isdir(template_path):
+            recursively_fill_template_in_dir(args, template_path, os.curdir, run_configurations)
+        else:
+            render_template_to_directory(os.path.join(args.name, os.path.basename(template_path)), template_path, run_configurations)
 
 
 def recursively_fill_template_in_dir(args: argparse.Namespace, template_dir: str, destination: str, run_configurations: dict):
@@ -399,8 +406,6 @@ def generate_project(args: argparse.Namespace):
     :param args:
     :return:
     """
-
-    print('No pre-existing generoo run configuration found...')
     template_directory, template_file = get_template_configuration_metadata(args)
     template_configuration = load_template_configuration(template_file)
     try:
@@ -409,7 +414,6 @@ def generate_project(args: argparse.Namespace):
             template_configuration = override_defaults(template_configuration, run_configuration)
         run_configuration = extract_run_configuration(template_configuration, args.auto_config)
     except IOError:
-        print('Failed to find and/or load existing run configuration.')
         run_configuration = extract_run_configuration(template_configuration, args.auto_config)
     create_configuration_directory(args, run_configuration)
     fill_in_templates(args, template_directory, template_configuration, run_configuration)
@@ -439,7 +443,7 @@ if __name__ == "__main__":
     # Keyword Arguments
     parser.add_argument('-c', '--template-config',
                         help='Points to a location on the system that contains a custom template config.')
-    parser.add_argument('-t', '--templates', default=archetype_default,
+    parser.add_argument('-t', '--template', default=archetype_default,
                         help='Points to a directory on the system that contains templates for a corresponding '
                              'template config')
     parser.add_argument('-r', '--run-configuration',

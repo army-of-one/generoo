@@ -75,7 +75,7 @@
                   "value": true
                 }
               ],
-              "name": "url",
+              "name": "username",
               "text": "Database Username (note, this will be applied to all environments)"
             },
             {
@@ -85,7 +85,7 @@
                   "value": true
                 }
               ],
-              "name": "url",
+              "name": "password",
               "text": "Database Password (note, this will be applied to all environments)"
             }
           ]

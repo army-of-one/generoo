@@ -70,7 +70,9 @@ def render_destination_path(destination: str, parameters: dict) -> str:
 
 
 def overwrite_file(file, content):
-    os.makedirs(os.path.dirname(file), exist_ok=True)
+    directory_name = os.path.dirname(file)
+    if directory_name != '':
+        os.makedirs(directory_name, exist_ok=True)
     f = open(file, 'w')
     f.write(content)
     f.close()
@@ -93,7 +95,8 @@ def prompt_user(prompt: dict):
     text = format_prompt_text(text, default, options)
     input_response = input(text)
     if input_response == "":
-        input_response = default
+        if default is not None:
+            input_response = default
     valid = is_valid_input(input_response, validations)
     while not valid:
         text = f'{text[0:-2]} ({get_validation_strings(validations)}): '
@@ -104,9 +107,9 @@ def prompt_user(prompt: dict):
 
 def format_prompt_text(text, default, options):
     if default is not None and not "":
-        text += f"({default})"
+        text += f" ({default})"
     if options is not None and len(options) > 0:
-        text += f"[{options}]"
+        text += f" [{options}]"
     text += ": "
     return text
 

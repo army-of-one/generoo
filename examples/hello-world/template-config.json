@@ -1,0 +1,8 @@
+{
+  "prompts": [
+    {
+      "name": "who",
+      "text": "Say hello to"
+    }
+  ]
+}
