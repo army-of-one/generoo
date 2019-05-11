@@ -1,39 +1,73 @@
 # Generoo
 
-Code generation driven by templating and configuration.
+<img src="https://github.com/army-of-one/generoo/blob/master/docs/generoo_icon.jpg" width="200" height="188" />
 
-## What does it do?
+When we start new projects, we often go through a similar set of steps to bootstrap it. As a developer, we want to
+spend time developing. That's where generoo comes in. Generoo allows developers to write a project template once and
+then generate new projects from that template in seconds. Project templating without any additional coding gives time 
+back to developers so they can focus on writing core business logic.
 
-Generoo is a tool that can be used to create customizable and reusable templates for generating anything from single
-documents to complex software projects. Generoo leverages [Mustache](https://mustache.github.io/) for its simple and 
-powerful templating syntax. Be sure to check out their [manual](https://mustache.github.io/mustache.5.html) for 
-information on creating templates.
+For an in-depth look at Generoo and it's use, see the [documentation](https://generoo.armyofone.tech).
 
-Unlike other popular templating frameworks, Generoo requires no additional coding to use.
+## How does it work?
 
-Whether you want to generate a pre-configured project from the built-in Generoo archetypes, or you created your own template,
-it can all be achieved through a JSON configuration file and a template folder.
+Generoo is simple. Create a template using [Mustache](https://mustache.github.io/)'s syntax for string replacement.
+
+The template could be a file called `exmaples/hello-world/hello_world.py` that looks like:
+
+```python
+print('Hello, {{who}}')
+```
+
+Then, a template configuration file in JSON or YAML defines prompts for the user when they run Generoo. Here's an example
+file called `examples/hello-world/template-config.json`:
+
+```json
+{
+  "prompts": [
+    {
+      "name": "who",
+      "text": "Enter who you want to say hello to"
+    }
+  ]
+}
+```
+
+The text is what the user will see when the prompt is shown and the name is the template value that will be replaced.
+
+Running `python3 generoo.py generate project hello-world --template examples/hello-world/hello_world.py --template-config examples/hello-world/template-config.json` will prompt the user:
+
+```
+$ Say hello to:
+```
+
+When user enters: `World`, then the template is filled out and written to `hello-world/hello_world.py` and looks like:
+
+```python
+print('Hello, World')
+```
+
+For more information about how the templating system works, see the [Generoo documentation](https://generoo.armyofone.tech).
 
 ## Usage
 
 Using generoo is simple. The CLI or python script takes 3 positional arguments:
 
-`generoo [options...] <goal> <scope> <name>`
+`generoo <goal> <scope> <name> [options...]`
 
 - `goal` - what you want generoo to do. Example: `generate`
 - `scope` - what you want generoo to create. Example: `project`
-- `name` - what you want to name what generoo is creating. This will be used as the root directory name. Example: `test`
+- `name` - what you want to name what generoo is creating. This will be used as the root directory name. Example: `example`
 
 Positional Arguments (in the order they appear):
 
-#### Goal Options
+### Goals
 
 | Argument | Description | Aliases |
 |---|---|---|
 |`generate` | Fill in templates for an archetype or custom user project.  | `gen`, `g` |
 
-
-#### Scope Options
+### Scopes
 
 | Argument | Description | Aliases |
 |---|---|---|
@@ -46,248 +80,27 @@ Positional Arguments (in the order they appear):
 |`-n`, `--no-config` | Will run generoo without a pre-existing configuration.  |
 |`-a`, `--auto-config` | Will run generoo using the pre-existing configuration and only prompt for values not present in the configuration.  |
 |`-c`, `--template-config` | Points to a location on the system that contains a custom template config.  |
-|`-t`, `--templates` | Points to a directory on the system that contains templates for a corresponding template config.  |
+|`-t`, `--template` | Points to a directory on the system that contains templates for a corresponding template config.  |
 |`-r`, `--run-configuration` | Points to a file on the system that contains a run configuration for a corresponding template config. |
 
-### Run from Sources
+## Run from Source
 
 Clone the project. Navigate to the directory on your machine.
+
+*Note*: Generoo must be run in Python 3.6 and above.
 
 You can run from the python interpreter by using the following command:
 
 ```python generoo.py <goal> <scope> <name>```
 
-### Run binary
+## Built-In Templates
 
-Download the binary. Navigate to the download directory on your machine.
+If no `--template` or `--template-config` arguments are given, then Generoo will generate from its built-in templates. 
+Check out the `archetypes` directory to see the templates yourself. Or, better yet, try generating one. 
 
-Run the binary using the following command:
+## Contributing
 
-```generoo <goal> <scope> <name>```
+Have a template that you'd like to share? Submit a PR with the template and we'll see about getting it
+into the built-in templates for this project. 
 
-## Configuration
-
-Configurations are the driving force behind Generoo's generation.
-
-### Template Configuration
-
-The template configuration is the most important configuration. It encompasses the following:
-* any variables that need to be used in the mappings but not taken by the user
-* the prompts that need to be taken from the user in order to fill in the templates
-* the mapping from the template directory to the output directory
-
-In pre-existing archetypes, it will always be called `<scope>-template-configuration.json`.
-
-Here is an example of a `project-template-configuration.json` file:
-
-```json
-{
-  "variables": [
-    {
-      "name": "group_id",
-      "value": "tech.armyofone"
-    }
-  ],
-  "prompts": [
-    {
-      "name": "artifact_id",
-      "value": "example"
-    },
-    {
-      "name": "guava_version",
-      "text": "Enter the desired guava version",
-      "options": ["19.0", "27.1-jre"],
-      "default": "27.1-jre"
-    },
-    {
-      "name": "database",
-      "text": "Database?",
-      "type": "BOOL",
-      "default": "Yes",
-      "follow_ups": [
-        {
-          "conditions": [
-            {
-              "evaluation": "BOOL",
-              "value": true
-            }
-          ],
-          "name": "database_type",
-          "text": "What type of database would you like?",
-          "options": ["Postgres", "Cassandra"],
-          "transformations": [
-            {
-              "name": "database_type_capitalized",
-              "transformation": "PERIODS"
-            }
-          ]
-        }
-      ]
-    }
-  ],
-  "mappings": [
-    {
-      "template": "templates/example.txt",
-      "destination": "output/{{name}}-example.txt"
-    }
-  ]
-}
-```
-
-#### Variables
-
-Prompts are an _optional_ field in the template configuration that allows the user to set values in the configuration 
-that don't require user input. 
-
-#### Prompts
-
-Prompts are an _optional_ field in the template configuration that allows the user to set the inputs that are captured 
-when goal is being run.
-
-Prompts will capture information from the user of the tool. 
-
-- `name` - the name of the variable that stores the value.
-
-- `text` - the text the user will see (no need to add `:`, that will be done for you).
-
-- `type` - describes the type of value to capture. Defaults to `STRING`
-
-- `options` - a list of the accepted options for the prompt
-
-- `default` - a default value to use if the user does not enter a new one.
-
-- `validations` - a list of validations to perform on the user's input before continuing.
-
-- `follow_up` - a list of follow up prompts that depend on the answer for a given prompt.
-
-The prompts will execute in the order they appear in the list.
-
-Evaluations will validate user input. Here are some of the types of validations that are supported.
-
-| Evaluation Name | Description |
-| --- | --- |
-| REGEX | Checks that the inputted value matches the provided Regular Expression. |
-| GREATER_THAN | Checks that the inputted value is greater than provided value.  |
-| LESS_THAN | Checks that the inputted value is less than provided value. |
-| BOOL | Checks that the inputted value is equal to the provided value. |
-
-Types
-
-| Types | Notes |
-| --- | --- |
-| STRING |  DEFAULT. Captures a string value, can be evaluated against regular expressions or against provided options. |
-| INT | Captures an integer value, can be evaluated against a provided integer validation or provided options. |
-| BOOL | Captures a `yes` or `no` answer. The options provided will be evaluated in addition to built in yes/no options. Successfully evaluates against `yes`, `YES`, `Yes`, `y`, `Y`, `N`, `n`, `no`, `No`, `NO` |
-
-Transformations
-
-Each prompt and follow-up can take a list of transformations. 
-
-```json
-"transformations": [
-  {
-    "name": "field_capitalized",
-    "transformation": "CAPITALIZED"
-  },
-  {
-    "name": "field_slashes",
-    "transformation": "SLASHES"
-  },
-  {
-    "name": "field_periods",
-    "transformation": "PERIODS"
-  }
-]
-
-```
-
-These transformations will perform casing and separator formatting.
-
-For example:
-
-Using a `"DASHES"` transformation on `tech.armyofone` yields `tech-armyofone`.
-
-| Transformation | Example |
-|---|---|
-|SNAKE | army_of_one  |
-|DASHES | army-of-one  |
-|SLASHES | army/of/one |
-|PERIODS | army.of.one  |
-|LOWER | army of one  |
-|CAMEL | armyOfOne |
-|CAPITALIZED | ArmyOfOne |
-|CAPITALIZED_WITH_SPACES | Army Of One |
-
-Follow Ups
-
-Follow up prompts are prompts with validations. Here's an example of a prompt with a follow-up:
-
-```json
-{
-  "name": "steak",
-  "text": "Do you want to go eat steak?",
-  "type": "BOOL",
-  "default": "Yes",
-  "follow_ups": {
-    "conditions": [
-      {
-        "evaluation": "BOOL",
-        "value": true
-      }
-    ],
-    "name": "time",
-    "text": "What time do you want to go?"
-  }
-}
-```
-
-#### Mappings
-
-Mappings are an _optional_ field in the template configuration that allows for a custom destination to be set for a template. 
-
-The mappings define:
-* `template` - a path to a template file.
-* `destination` - a path to an output file.
-
-The `destination` string can take named variables using the mustache syntax: `{{variable_name}}. The name, in this case,
-can be any of the variable names, prompt names, or transformation names.
-
-If the mapping is optional, meaning that the user would need to say yes to a prompt in order to continue with filling out
-the template, then mustache section syntax may be used. For example:
-
-```json
-{
-  ...
-  "mappings": {
-    "template": "database/",
-    "destination": "{{#database}}/database/{{database_type}}/{{/database}}"
-  },
-  ...
-}
-```
-
-This mapping destination will first evaluate against the `database` value that would be collected by the prompt. If the
-evaluation is true, meaning the database value was present, then the resulting destination string will be 
-`/database/{{database_type}}`.
-
-_Important Note_
-
-If the opening tag for a section is provided, no closing tag (`{{/}}`) is required. The filesystem controller will still
-treat the destination as a section and will not resolve it in the event the section conditional statement is false. This
-is *not* standard behavior for `mustache`, so we're breaking the rules a little bit here. 
-
-### Run Configurations
-
-After the first run of this project, a `.generoo` file will be created in the root directory. This `.generator` file
-will contain configuration files. One of these files is the `run-configuration.json` file. This file contains the inputs
-used when the project was run the first time. When subsequent generator tasks are run, this run configuration will be 
-used to automatically fill out the fields in prompts. 
-
-If you would like to proceed with the `run-configuration.json` fields without being prompted again, then you can provide
- the`-c`or `--no-config` flags in the run command: `generoo generate resource --no-config`.
-
-### Dependencies:
-
-https://mustache.github.io/
-https://github.com/defunkt/pystache
-https://pypi.org/project/jsonschema/
+Want some new functionality? Open an issue or a PR with the changes you'd like to see. 
