@@ -2,3 +2,11 @@
 ---
 
 @import "{{ site.theme }}";
+
+.inner {
+  max-width: 1200px;
+}
+
+img {
+  -webkit-box-shadow: 0 0 0px #ebebeb;
+}

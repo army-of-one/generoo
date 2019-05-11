@@ -1,5 +1,7 @@
 # Generoo
 
+<img src="https://github.com/army-of-one/generoo/blob/master/docs/generoo_icon.jpg" width="200" height="188" />
+
 When we start new projects, we often go through a similar set of steps to bootstrap it. As a developer, we want to
 spend time developing. That's where generoo comes in. Generoo allows developers to write a project template once and
 then generate new projects from that template in seconds. Project templating without any additional coding gives time 
