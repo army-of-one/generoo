@@ -37,6 +37,10 @@
         {
           "name": "artifact_id_periods",
           "transformation": "PERIODS"
+        },
+        {
+          "name": "artifact_id_camel",
+          "transformation": "CAMEL"
         }
       ]
     },
