@@ -11,7 +11,7 @@ from utils import handle_prompt, convert_to_dashes, convert_to_slashes, convert_
 generate_options = ['generate', 'gen', 'g']
 project_options = ['project', 'proj', 'pro', 'p']
 excluded_archetypal_directories = ['common', '__pycache__']
-archetype_default = 'archetypes'
+archetype_default = f'{os.path.join(os.path.dirname(os.path.realpath(__file__)))}/archetypes'
 project_template_filename = 'project-template-config.json'
 template_filename = '-template-config.json'
 
@@ -50,7 +50,7 @@ def prompt_for_archetype() -> (str, str, str):
 
 def get_languages() -> list:
     """Traverse templates directory to pull out all of the directories that represent languages. Ignore common.py."""
-    root = 'archetypes/'
+    root = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'archetypes/')
     return [subdirectory for subdirectory in os.listdir(root) if os.path.isdir(os.path.join(root, subdirectory))
             and subdirectory not in excluded_archetypal_directories]
 
@@ -60,7 +60,7 @@ def get_framework(language: str) -> list:
     Traverse templates/{language} directory to pull out all of the directories that represent archetypes.
     Ignore common.py.
     """
-    root = f'archetypes/{language}'
+    root = os.path.join(os.path.dirname(os.path.realpath(__file__)), f'archetypes/{language}')
     return [subdirectory for subdirectory in os.listdir(root) if os.path.isdir(os.path.join(root, subdirectory))
             and subdirectory not in excluded_archetypal_directories]
 
@@ -70,7 +70,7 @@ def get_versions(language: str, framework: str) -> list:
     Traverse templates/{language}/{framework} directory to pull out all of the directories that represent versions.
     Ignore common.py.
     """
-    root = f'archetypes/{language}/{framework}'
+    root = os.path.join(os.path.dirname(os.path.realpath(__file__)), f'archetypes/{language}/{framework}')
     return [subdirectory for subdirectory in os.listdir(root) if os.path.isdir(os.path.join(root, subdirectory))
             and subdirectory not in excluded_archetypal_directories]
 
