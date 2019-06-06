@@ -10,3 +10,5 @@ venv
 /test-api
 /.generoo
 /example
+
+*.egg-info

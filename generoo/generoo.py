@@ -4,7 +4,7 @@ import os
 
 from pick import pick
 
-from utils import handle_prompt, convert_to_dashes, convert_to_slashes, convert_to_periods, \
+from generoo.utils import handle_prompt, convert_to_dashes, convert_to_slashes, convert_to_periods, \
     convert_to_caps_no_spaces, convert_to_caps_with_spaces, render_template_to_directory, render_destination_path, \
     is_valid_input, equals_ignore_case, convert_to_snake, convert_to_camel, yes_no_to_bool, convert_to_lower_with_spaces
 
@@ -425,7 +425,7 @@ def run(args: argparse.Namespace):
             generate_project(args)
 
 
-if __name__ == "__main__":
+def generoo():
     parser = argparse.ArgumentParser(description='Generate code from templates.')
 
     # Positional Arguments
@@ -454,3 +454,5 @@ if __name__ == "__main__":
     run(arguments)
 
 
+if __name__ == "__main__":
+    generoo()
