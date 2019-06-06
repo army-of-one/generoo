@@ -9,11 +9,33 @@ back to developers so they can focus on writing core business logic.
 
 For an in-depth look at Generoo and it's use, see the [documentation](https://generoo.armyofone.tech).
 
+## Installation
+
+### PIP
+
+Install the package from pip:
+
+`pip install generoo`
+
+Run from the module:
+
+`python -m generoo <goal> <scope> <name>`
+
+### Source
+
+Clone the project. Navigate to the directory on your machine.
+
+*Note*: Generoo must be run in Python 3.6 and above.
+
+You can run from the python interpreter by using the following command:
+
+```python generoo.py <goal> <scope> <name>```
+
 ## How does it work?
 
 Generoo is simple. Create a template using [Mustache](https://mustache.github.io/)'s syntax for string replacement.
 
-The template could be a file called `exmaples/hello-world/hello_world.py` that looks like:
+The template could be a file called `examples/hello-world/hello_world.py` that looks like:
 
 ```python
 print('Hello, {{who}}')
@@ -82,16 +104,6 @@ Positional Arguments (in the order they appear):
 |`-c`, `--template-config` | Points to a location on the system that contains a custom template config.  |
 |`-t`, `--template` | Points to a directory on the system that contains templates for a corresponding template config.  |
 |`-r`, `--run-configuration` | Points to a file on the system that contains a run configuration for a corresponding template config. |
-
-## Run from Source
-
-Clone the project. Navigate to the directory on your machine.
-
-*Note*: Generoo must be run in Python 3.6 and above.
-
-You can run from the python interpreter by using the following command:
-
-```python generoo.py <goal> <scope> <name>```
 
 ## Built-In Templates
 
