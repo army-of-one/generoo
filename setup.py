@@ -1,5 +1,4 @@
 import os
-import sys
 import setuptools
 
 with open("README.md", "r") as fh:
@@ -22,7 +21,7 @@ package_data = {"generoo":  archetype_filenames + examples_filenames}
 
 setuptools.setup(
     name="generoo",
-    version="2019.06.05",
+    version="2019.07.23",
     author="Thomas Sickert",
     author_email="thomas.sickert@gmail.com",
     description="Generate code without writing any.",
