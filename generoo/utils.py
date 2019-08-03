@@ -3,7 +3,6 @@ import re
 import regex
 from pystache import Renderer
 
-# TODO: implement the proper RegEx for the convert methods. Only work from '-' right now
 yes_no = ['y', 'n']
 
 
@@ -92,6 +91,7 @@ def prompt_user(prompt: dict):
     default = prompt.get('default')
     options = prompt.get('options')
     validations = prompt.get('validations')
+    type = prompt.get('type')
     text = format_prompt_text(text, default, options)
     input_response = input(text)
     if input_response == "":
@@ -102,6 +102,8 @@ def prompt_user(prompt: dict):
         text = f'{text[0:-2]} ({get_validation_strings(validations)}): '
         input_response = input(text)
         valid = is_valid_input(input_response, validations)
+    if type == 'BOOL':
+        input_response = yes_no_to_bool(input_response)
     return input_response
 
 
@@ -132,7 +134,7 @@ def get_validation_strings(validations: list) -> str:
     return validation_string[:-1]
 
 
-def yes_no_to_bool(response: str):
+def yes_no_to_bool(response: str) -> bool:
     if len(response) > 0:
         return equals_ignore_case(response[0], 'y')
     return False
@@ -161,7 +163,7 @@ def is_valid_input(input_response: str, validations: list) -> bool:
                 elif equals_ignore_case(evaluation, 'LESS_THAN'):
                     valid = int(input_response) < value
                 elif equals_ignore_case(evaluation, 'BOOL'):
-                    valid = yes_no_to_bool(input_response) == value
+                    valid = input_response == value
                 else:
                     raise AttributeError(f'Invalid evaluation type for validations: {evaluation}')
                 if not valid:

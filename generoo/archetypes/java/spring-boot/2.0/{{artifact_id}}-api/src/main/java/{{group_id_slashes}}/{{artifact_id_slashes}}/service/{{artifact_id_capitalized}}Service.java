@@ -1,6 +1,8 @@
 package {{group_id}}.{{artifact_id_periods}}.service;
 
+{{#hibernate}}
 import {{group_id}}.{{artifact_id_periods}}.repository.{{artifact_id_capitalized}}Repository;
+{{/hibernate}}
 import org.springframework.stereotype.Service;
 
 @Service

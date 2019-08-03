@@ -332,7 +332,7 @@ def evaluate_filepath_conditions(file_destination: str, run_configurations: dict
         tag_close_index = file_destination.find(tag_close, conditional_tag_index)
         tag_start_index = conditional_tag_index + conditional_tag_len
         tag_key = file_destination[tag_start_index:tag_close_index]
-        if tag_key not in run_configurations or not yes_no_to_bool(run_configurations[tag_key]):
+        if tag_key not in run_configurations or not run_configurations[tag_key]:
             return file_destination, False
         file_destination = file_destination[:conditional_tag_index] + file_destination[tag_close_index+tag_close_len:]
         conditional_tag_index = file_destination.find(conditional_tag, tag_close_index + tag_close_len)
