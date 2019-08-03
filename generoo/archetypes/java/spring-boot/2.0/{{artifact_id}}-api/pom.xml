@@ -14,12 +14,14 @@
 
     <dependencies>
 
+        {{#hibernate}}
         <dependency>
             <groupId>{{group_id}}</groupId>
             <artifactId>{{artifact_id}}-entity</artifactId>
             <version>${parent.version}</version>
         </dependency>
 
+		{{/hibernate}}
         <dependency>
             <groupId>{{group_id}}</groupId>
             <artifactId>{{artifact_id}}-model</artifactId>
