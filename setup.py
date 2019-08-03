@@ -21,7 +21,7 @@ package_data = {"generoo":  archetype_filenames + examples_filenames}
 
 setuptools.setup(
     name="generoo",
-    version="2019.07.23",
+    version="2019.07.24.6",
     author="Thomas Sickert",
     author_email="thomas.sickert@gmail.com",
     description="Generate code without writing any.",
