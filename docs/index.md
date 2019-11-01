@@ -7,7 +7,7 @@ spend time developing. That's where generoo comes in. Generoo allows developers 
 then generate new projects from that template in seconds. Project templating without any additional coding gives time 
 back to developers so they can focus on writing core business logic.
 
-For an in-depth look at Generoo and it's use, see the [documentation](https://generoo.armyofone.tech).
+For an in-depth look at Generoo and it's use, see the [documentation](https://generoo.armyofone.tech/documentation).
 
 ## Installation
 
