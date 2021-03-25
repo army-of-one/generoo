@@ -38,7 +38,7 @@ setuptools.setup(
         "pick==0.6.4",
         "PyInstaller==3.4",
         "pystache==0.5.4",
-        "PyYAML==5.1",
+        "PyYAML==5.4",
         "regex==2019.06.05",
     ],
     package_data=package_data,
