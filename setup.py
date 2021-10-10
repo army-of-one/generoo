@@ -36,7 +36,7 @@ setuptools.setup(
         "macholib==1.11",
         "pefile==2019.4.18",
         "pick==0.6.4",
-        "PyInstaller==3.4",
+        "PyInstaller==3.6",
         "pystache==0.5.4",
         "PyYAML==5.4",
         "regex==2019.06.05",
